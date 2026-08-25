@@ -9,10 +9,15 @@ const _seedColors = <Color>[
   Colors.deepPurple,
   Colors.indigo,
   Colors.blue,
+  Colors.cyan,
   Colors.teal,
   Colors.green,
+  Colors.lime,
+  Colors.amber,
   Colors.orange,
+  Colors.red,
   Colors.pink,
+  Colors.brown,
 ];
 
 /// Custom palettes modeled on common terminal color styles.
@@ -304,13 +309,6 @@ class _GalleryPageState extends State<GalleryPage> {
     );
   }
 
-  /// Picks the app-level seed color from a pinned inspector action.
-  Future<void> _pickSeed() async {
-    final picked = await _pickFromGrid(_seedColors, widget.seed);
-    if (picked == null || !mounted) return;
-    widget.onSeedChanged(picked);
-  }
-
   Future<void> _pickColor(
     String role,
     Color current,
@@ -374,16 +372,14 @@ class _GalleryPageState extends State<GalleryPage> {
           config: _config,
           onChanged: (c) => setState(() => _config = c),
           presets: _presets,
-          // The app-level seed lives in the inspector's pinned footer —
-          // a control that persists across the Presets and Custom tabs,
-          // reached from an action that opens the seed grid.
-          actions: [
-            PlaygroundAction(
-              label: 'Seed color',
-              icon: const Icon(Icons.palette_outlined),
-              onPressed: _pickSeed,
-            ),
-          ],
+          // The app-level seed lives in the inspector's pinned footer, a
+          // control that persists across the Presets and Custom tabs. The
+          // swatches are shown inline so a color is one tap away.
+          footer: _SeedPicker(
+            seeds: _seedColors,
+            selected: widget.seed,
+            onChanged: widget.onSeedChanged,
+          ),
           previewBuilder: (context, config) {
             final gallery = _gallery();
             // A themed configuration derives from the theme in place;
@@ -425,6 +421,52 @@ class _GalleryPageState extends State<GalleryPage> {
           },
         ),
       ),
+    );
+  }
+}
+
+/// The app-level seed picker, shown in the inspector's pinned footer.
+///
+/// A label naming the control over a wrap of the seed swatches, so a color is
+/// one tap away rather than behind a sheet. It sits in the playground's footer,
+/// which persists across the Presets and Custom tabs.
+class _SeedPicker extends StatelessWidget {
+  const _SeedPicker({
+    required this.seeds,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  final List<Color> seeds;
+  final Color selected;
+  final ValueChanged<Color> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'SEED COLOR',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final color in seeds)
+              _ColorDot(
+                color: color,
+                selected: color == selected,
+                onTap: () => onChanged(color),
+              ),
+          ],
+        ),
+      ],
     );
   }
 }
