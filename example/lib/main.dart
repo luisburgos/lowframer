@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lowframer/lowframer.dart';
+import 'package:playgrounder/playgrounder.dart';
 
 void main() => runApp(const ExampleApp());
 
@@ -87,8 +88,57 @@ const _pickerColors = <Color>[
   Color(0x66FFFFFF),
 ];
 
-/// Where the gallery's palette comes from.
-enum _PaletteMode { theme, presets, custom }
+/// Where the gallery's palette comes from — the playground's configuration.
+///
+/// The three cases are the three ways the arts can be colored: derived from the
+/// app theme, one of the named terminal palettes, or a fully custom set of
+/// roles. Value equality lets the playground tell which preset (if any) the
+/// current configuration matches.
+@immutable
+sealed class _PaletteConfig {
+  const _PaletteConfig();
+}
+
+/// Derive the palette from the ambient `ColorScheme` — the "Themed" preset.
+class _ThemedPalette extends _PaletteConfig {
+  const _ThemedPalette();
+
+  @override
+  bool operator ==(Object other) => other is _ThemedPalette;
+
+  @override
+  int get hashCode => (_ThemedPalette).hashCode;
+}
+
+/// One of the named terminal palettes, keyed by [name].
+class _TerminalPalette extends _PaletteConfig {
+  const _TerminalPalette(this.name);
+
+  final String name;
+
+  LowframerPalette get palette => _terminalPalettes[name]!;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _TerminalPalette && other.name == name;
+
+  @override
+  int get hashCode => name.hashCode;
+}
+
+/// A fully custom palette, edited role by role.
+class _CustomPalette extends _PaletteConfig {
+  const _CustomPalette(this.palette);
+
+  final LowframerPalette palette;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _CustomPalette && other.palette == palette;
+
+  @override
+  int get hashCode => palette.hashCode;
+}
 
 class ExampleApp extends StatefulWidget {
   const ExampleApp({super.key});
@@ -153,11 +203,44 @@ class GalleryPage extends StatefulWidget {
 }
 
 class _GalleryPageState extends State<GalleryPage> {
-  _PaletteMode _paletteMode = _PaletteMode.theme;
-  String _terminal = _terminalPalettes.keys.first;
-  LowframerPalette? _custom;
+  _PaletteConfig _config = const _ThemedPalette();
 
-  /// The same six arts render in every mode; only the palette source changes.
+  /// The playground's presets: the theme-derived palette first, then each
+  /// named terminal palette.
+  static const _presets = <PlaygroundPreset<_PaletteConfig>>[
+    PlaygroundPreset(
+      label: 'Themed',
+      config: _ThemedPalette(),
+      summary: 'Derived from the app theme — follows dark mode and the seed.',
+    ),
+    PlaygroundPreset(
+      label: 'Dracula',
+      config: _TerminalPalette('Dracula'),
+      summary: 'A terminal palette, held whatever the app theme does.',
+    ),
+    PlaygroundPreset(
+      label: 'Solarized Dark',
+      config: _TerminalPalette('Solarized Dark'),
+      summary: 'A terminal palette, held whatever the app theme does.',
+    ),
+    PlaygroundPreset(
+      label: 'Solarized Light',
+      config: _TerminalPalette('Solarized Light'),
+      summary: 'A terminal palette, held whatever the app theme does.',
+    ),
+    PlaygroundPreset(
+      label: 'Monokai',
+      config: _TerminalPalette('Monokai'),
+      summary: 'A terminal palette, held whatever the app theme does.',
+    ),
+    PlaygroundPreset(
+      label: 'Nord',
+      config: _TerminalPalette('Nord'),
+      summary: 'A terminal palette, held whatever the app theme does.',
+    ),
+  ];
+
+  /// The same six arts render for every palette; only the source changes.
   static const _arts = <Widget>[
     LowframerCover(child: ButtonsArt()),
     LowframerCover(child: TypographyArt()),
@@ -192,8 +275,14 @@ class _GalleryPageState extends State<GalleryPage> {
     },
   );
 
-  Future<void> _pickColor(String role, Color current) async {
-    final picked = await showModalBottomSheet<Color>(
+  /// Edits one role of `base`, producing a custom palette configuration.
+  ///
+  /// `base` is the palette currently showing — whether that came from the
+  /// theme, a terminal preset, or a prior custom edit — so a tweak always
+  /// starts from what the eye sees rather than from scratch.
+  /// Presents a grid of [choices] as a bottom sheet, returning the picked one.
+  Future<Color?> _pickFromGrid(List<Color> choices, Color current) {
+    return showModalBottomSheet<Color>(
       context: context,
       builder: (context) => SafeArea(
         child: Padding(
@@ -202,7 +291,7 @@ class _GalleryPageState extends State<GalleryPage> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              for (final color in _pickerColors)
+              for (final color in choices)
                 _ColorDot(
                   color: color,
                   selected: color == current,
@@ -213,109 +302,62 @@ class _GalleryPageState extends State<GalleryPage> {
         ),
       ),
     );
+  }
+
+  /// Picks the app-level seed color from a pinned inspector action.
+  Future<void> _pickSeed() async {
+    final picked = await _pickFromGrid(_seedColors, widget.seed);
     if (picked == null || !mounted) return;
-    setState(() {
-      _custom = switch (role) {
-        'backdrop' => _custom!.copyWith(backdrop: picked),
-        'background' => _custom!.copyWith(background: picked),
-        'border' => _custom!.copyWith(border: picked),
-        'fill' => _custom!.copyWith(fill: picked),
-        'fillStrong' => _custom!.copyWith(fillStrong: picked),
-        _ => _custom!.copyWith(accent: picked),
-      };
-    });
+    widget.onSeedChanged(picked);
+  }
+
+  Future<void> _pickColor(
+    String role,
+    Color current,
+    LowframerPalette base,
+  ) async {
+    final picked = await _pickFromGrid(_pickerColors, current);
+    if (picked == null || !mounted) return;
+    final edited = switch (role) {
+      'backdrop' => base.copyWith(backdrop: picked),
+      'background' => base.copyWith(background: picked),
+      'border' => base.copyWith(border: picked),
+      'fill' => base.copyWith(fill: picked),
+      'fillStrong' => base.copyWith(fillStrong: picked),
+      _ => base.copyWith(accent: picked),
+    };
+    setState(() => _config = _CustomPalette(edited));
+  }
+
+  /// The palette the given configuration resolves to in the current context.
+  ///
+  /// A themed configuration derives from the ambient `ColorScheme`; the others
+  /// carry their palette directly.
+  LowframerPalette _resolve(BuildContext context, _PaletteConfig config) {
+    return switch (config) {
+      _ThemedPalette() => LowframerPalette.of(context),
+      _TerminalPalette(:final palette) => palette,
+      _CustomPalette(:final palette) => palette,
+    };
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Custom starts from what the theme currently derives, so the user
-    // tweaks a sensible palette instead of building one from scratch.
-    final custom = _custom ??= LowframerPalette.of(context);
-
-    // App-level: the seed recolors the whole app — Material chrome, the
-    // Theme mode's derived arts, and the palette Custom starts from — so it
-    // sits above the mode switch rather than inside any one segment.
-    final seedPicker = Wrap(
-      spacing: 8,
-      children: [
-        for (final color in _seedColors)
-          _ColorDot(
-            color: color,
-            selected: color == widget.seed,
-            onTap: () => widget.onSeedChanged(color),
-          ),
-      ],
-    );
-
-    final controls = switch (_paletteMode) {
-      _PaletteMode.theme => const SizedBox.shrink(),
-      _PaletteMode.presets => Wrap(
-        spacing: 8,
-        children: [
-          for (final name in _terminalPalettes.keys)
-            ChoiceChip(
-              label: Text(name),
-              selected: name == _terminal,
-              onSelected: (_) => setState(() => _terminal = name),
-            ),
-        ],
-      ),
-      _PaletteMode.custom => Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          _RoleSwatch(
-            label: 'backdrop',
-            color: custom.backdrop,
-            onTap: () => _pickColor('backdrop', custom.backdrop),
-          ),
-          _RoleSwatch(
-            label: 'background',
-            color: custom.background,
-            onTap: () => _pickColor('background', custom.background),
-          ),
-          _RoleSwatch(
-            label: 'border',
-            color: custom.border,
-            onTap: () => _pickColor('border', custom.border),
-          ),
-          _RoleSwatch(
-            label: 'fill',
-            color: custom.fill,
-            onTap: () => _pickColor('fill', custom.fill),
-          ),
-          _RoleSwatch(
-            label: 'fillStrong',
-            color: custom.fillStrong,
-            onTap: () => _pickColor('fillStrong', custom.fillStrong),
-          ),
-          _RoleSwatch(
-            label: 'accent',
-            color: custom.accent,
-            onTap: () => _pickColor('accent', custom.accent),
-          ),
-        ],
-      ),
-    };
-
-    // Theme mode derives; the other two scope an override over the gallery.
-    final gallery = switch (_paletteMode) {
-      _PaletteMode.theme => _gallery(),
-      _PaletteMode.presets => LowframerTheme(
-        palette: _terminalPalettes[_terminal]!,
-        child: _gallery(),
-      ),
-      _PaletteMode.custom => LowframerTheme(
-        palette: custom,
-        child: _gallery(),
-      ),
-    };
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('lowframer'),
+        // A full-width hairline where the app bar meets the playground, so the
+        // chrome reads as separate from the preview and inspector below it.
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8),
@@ -327,34 +369,61 @@ class _GalleryPageState extends State<GalleryPage> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          seedPicker,
-          const SizedBox(height: 12),
-          Center(
-            child: SegmentedButton<_PaletteMode>(
-              segments: const [
-                ButtonSegment(value: _PaletteMode.theme, label: Text('Theme')),
-                ButtonSegment(
-                  value: _PaletteMode.presets,
-                  label: Text('Presets'),
-                ),
-                ButtonSegment(
-                  value: _PaletteMode.custom,
-                  label: Text('Custom'),
-                ),
-              ],
-              selected: {_paletteMode},
-              onSelectionChanged: (selection) =>
-                  setState(() => _paletteMode = selection.first),
+      body: SafeArea(
+        child: Playground<_PaletteConfig>(
+          config: _config,
+          onChanged: (c) => setState(() => _config = c),
+          presets: _presets,
+          // The app-level seed lives in the inspector's pinned footer —
+          // a control that persists across the Presets and Custom tabs,
+          // reached from an action that opens the seed grid.
+          actions: [
+            PlaygroundAction(
+              label: 'Seed color',
+              icon: const Icon(Icons.palette_outlined),
+              onPressed: _pickSeed,
             ),
-          ),
-          const SizedBox(height: 12),
-          controls,
-          const SizedBox(height: 12),
-          gallery,
-        ],
+          ],
+          previewBuilder: (context, config) {
+            final gallery = _gallery();
+            // A themed configuration derives from the theme in place;
+            // the others scope their palette over the arts.
+            return switch (config) {
+              _ThemedPalette() => gallery,
+              _ => LowframerTheme(
+                palette: _resolve(context, config),
+                child: gallery,
+              ),
+            };
+          },
+          knobsBuilder: (context, config, onChanged) {
+            // Edits start from what is currently showing, so tweaking a
+            // preset carries its colors into the custom palette rather
+            // than resetting to the theme's.
+            final base = _resolve(context, config);
+            return KnobGroup(
+              title: 'Palette roles',
+              children: [
+                for (final (label, color) in <(String, Color)>[
+                  ('backdrop', base.backdrop),
+                  ('background', base.background),
+                  ('border', base.border),
+                  ('fill', base.fill),
+                  ('fillStrong', base.fillStrong),
+                  ('accent', base.accent),
+                ])
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: _RoleSwatch(
+                      label: label,
+                      color: color,
+                      onTap: () => _pickColor(label, color, base),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -421,7 +490,12 @@ class _RoleSwatch extends StatelessWidget {
           ),
         ),
       ),
-      label: Text(label),
+      // A full-width label makes the chip fill the inspector rather than
+      // hugging its text, so the roles line up as a column of equal rows.
+      label: SizedBox(
+        width: double.infinity,
+        child: Text(label),
+      ),
       onPressed: onTap,
     );
   }

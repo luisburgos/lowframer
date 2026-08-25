@@ -12,6 +12,8 @@ dependencies:
     sdk: flutter
   lowframer:
     path: ../
+  playgrounder:
+    path: ../../playgrounder
 
 dev_dependencies:
   flutter_test:
