@@ -10,6 +10,10 @@ illustrations need a designer and can't follow dark mode.
 primitives, drawn to say exactly what each item is, **current and on-theme by
 construction.**
 
+### 🔎 [**Try the live demo →**](https://luisburgos.github.io/lowframer/)
+
+The example gallery, running in your browser. No install required.
+
 ## Features ✨
 
 - **Compose exactly the art you need:** Window, Cover, Box (line/pill),
@@ -112,4 +116,10 @@ To tweak rather than replace, start from the derived palette and `copyWith`:
 final palette = LowframerPalette.of(context).copyWith(accent: Colors.teal);
 ```
 
-See [`example/`](example) for a runnable gallery.
+See the gallery running at
+**<https://luisburgos.github.io/lowframer/>**, or run [`example/`](example)
+locally:
+
+```sh
+cd example && fvm flutter run
+```
