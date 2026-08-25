@@ -1,5 +1,5 @@
 name: lowframer
-description: A tiny kit for drawing low-fidelity wireframe art — miniature, theme-aware UI illustrations built from code, no assets.
+description: "A tiny kit for drawing low-fidelity wireframe art: miniature, theme-aware UI illustrations built from code, no assets."
 version: 0.1.0
 repository: https://github.com/luisburgos/lowframer
 
