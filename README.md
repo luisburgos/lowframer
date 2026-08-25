@@ -1,0 +1,120 @@
+# lowframer
+
+**The low-fidelity wireframe art kit for Flutter.**
+
+Catalogues, showcases, and galleries need a cover illustration per item, and
+each of the usual options carries a tradeoff. Real screenshots are the most
+faithful but weigh on the bundle, go stale with every UI change, and lock to
+one theme. Icons are cheap and always current but too abstract to say what a
+component *is*. Pre-drawn illustrations look great but need a designer per
+item and cannot follow dark mode.
+
+Lowframer is the alternative when what you want is **customization and
+flexibility**: the illustration is code, composed from a handful of
+primitives, so you draw exactly the art each item needs — a miniature
+wireframe that says "this is a button row", "this is a sheet", "this is
+written text" — and it stays current and on-theme by construction.
+
+## Features ✨
+
+- **Compose exactly the art you need** — Window, Cover, Box (line/pill),
+  Scribble, Palette; five primitives, a distinct cover art in ~20 lines, no
+  designer in the loop
+- **Theme-aware for free** — every color derives from the ambient
+  `ColorScheme`; light/dark needs zero per-theme code
+- **Handwriting without words** — the Scribble draws deterministic pen
+  strokes with size, frequency, seed, and italic knobs
+- **Deterministic by contract** — no `Random`; identical input paints
+  identical pixels, golden- and test-stable
+- **Zero assets, zero dependencies** — pure Flutter, nothing to bundle
+
+## Installation 💻
+
+```sh
+flutter pub add lowframer
+```
+
+Or add it to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  lowframer: ^0.1.0
+```
+
+## Usage 🚀
+
+A miniature "buttons" illustration — a framed window holding pill
+silhouettes, with one accent:
+
+```dart
+import 'package:lowframer/lowframer.dart';
+
+class ButtonsArt extends StatelessWidget {
+  const ButtonsArt({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = LowframerPalette.of(context);
+    return LowframerWindow(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 8,
+        children: [
+          LowframerBox.pill(color: palette.accent, width: 72, height: 16),
+          LowframerBox.pill(color: palette.fill, width: 96, height: 16),
+          LowframerScribble(color: palette.fillStrong, width: 90),
+        ],
+      ),
+    );
+  }
+}
+```
+
+Wrap the window in a `LowframerCover` to present it as a card cover — a
+full-width wash panel with the framed art centered and lifted off it.
+
+### The scribble's knobs
+
+`LowframerScribble` stands in for *written* text: one continuous wavy pen
+stroke, no actual words.
+
+| Knob | Meaning |
+|---|---|
+| `color` | The ink color |
+| `width` / `height` | Line length and wave band; with `strokeWidth`, the writing's size |
+| `strokeWidth` | Pen thickness |
+| `wavelength` | Pixels per peak-and-valley cycle — the writing's frequency |
+| `seed` | Varies the handwriting; two lines with the same knobs read as different sentences |
+| `fontStyle` | Mirrors `TextStyle.fontStyle`; italic slants the stroke |
+| `style` | `sketch` (uniform drawn wave, default) or `wave` (irregular scrawl) |
+
+### Customizing the palette
+
+`LowframerPalette.of(context)` derives from the ambient `ColorScheme` by
+default — the art follows your theme, dark mode included, with no extra
+code. To customize, scope a palette over a subtree with `LowframerTheme`;
+everything below it (including `LowframerWindow` and `LowframerCover`, which
+resolve internally) picks it up:
+
+```dart
+LowframerTheme(
+  palette: LowframerPalette(
+    backdrop: Color(0x14704214),
+    background: Color(0xFFFDF6EC),
+    border: Color(0xFFE3D5C0),
+    fill: Color(0x3D704214),
+    fillStrong: Color(0x8A704214),
+    accent: Color(0xFF9C4221),
+  ),
+  child: LowframerCover(child: ButtonsArt()),
+)
+```
+
+To tweak rather than replace, start from the derived palette and `copyWith`:
+
+```dart
+final palette = LowframerPalette.of(context).copyWith(accent: Colors.teal);
+```
+
+See [`example/`](example) for a runnable gallery.

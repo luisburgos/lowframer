@@ -1,0 +1,25 @@
+name: lowframer
+description: A tiny kit for drawing low-fidelity wireframe art — miniature, theme-aware UI illustrations built from code, no assets.
+version: 0.1.0
+repository: https://github.com/luisburgos/lowframer
+
+# Max 5, lowercase alphanumeric or hyphens, 2-32 chars each.
+topics:
+  - wireframe
+  - illustration
+  - placeholder
+  - design
+  - widgets
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.41.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^10.2.0
