@@ -2,31 +2,26 @@
 
 **The low-fidelity wireframe art kit for Flutter.**
 
-Catalogues, showcases, and galleries need a cover illustration per item, and
-each of the usual options carries a tradeoff. Real screenshots are the most
-faithful but weigh on the bundle, go stale with every UI change, and lock to
-one theme. Icons are cheap and always current but too abstract to say what a
-component *is*. Pre-drawn illustrations look great but need a designer per
-item and cannot follow dark mode.
+Catalogues and galleries need a cover per item, and the usual options all trade
+off: screenshots go stale and lock to one theme, icons are too abstract, and
+illustrations need a designer and can't follow dark mode.
 
-Lowframer is the alternative when what you want is **customization and
-flexibility**: the illustration is code, composed from a handful of
-primitives, so you draw exactly the art each item needs — a miniature
-wireframe that says "this is a button row", "this is a sheet", "this is
-written text" — and it stays current and on-theme by construction.
+**lowframer's art is code instead:** a miniature wireframe composed from a few
+primitives, drawn to say exactly what each item is, **current and on-theme by
+construction.**
 
 ## Features ✨
 
-- **Compose exactly the art you need** — Window, Cover, Box (line/pill),
+- **Compose exactly the art you need:** Window, Cover, Box (line/pill),
   Scribble, Palette; five primitives, a distinct cover art in ~20 lines, no
   designer in the loop
-- **Theme-aware for free** — every color derives from the ambient
+- **Theme-aware for free:** every color derives from the ambient
   `ColorScheme`; light/dark needs zero per-theme code
-- **Handwriting without words** — the Scribble draws deterministic pen
+- **Handwriting without words:** the Scribble draws deterministic pen
   strokes with size, frequency, seed, and italic knobs
-- **Deterministic by contract** — no `Random`; identical input paints
+- **Deterministic by contract:** no `Random`; identical input paints
   identical pixels, golden- and test-stable
-- **Zero assets, zero dependencies** — pure Flutter, nothing to bundle
+- **Zero assets, zero dependencies:** pure Flutter, nothing to bundle
 
 ## Installation 💻
 
@@ -43,8 +38,8 @@ dependencies:
 
 ## Usage 🚀
 
-A miniature "buttons" illustration — a framed window holding pill
-silhouettes, with one accent:
+A miniature "buttons" illustration, a framed window holding pill
+silhouettes with one accent:
 
 ```dart
 import 'package:lowframer/lowframer.dart';
@@ -71,7 +66,7 @@ class ButtonsArt extends StatelessWidget {
 }
 ```
 
-Wrap the window in a `LowframerCover` to present it as a card cover — a
+Wrap the window in a `LowframerCover` to present it as a card cover: a
 full-width wash panel with the framed art centered and lifted off it.
 
 ### The scribble's knobs
@@ -84,7 +79,7 @@ stroke, no actual words.
 | `color` | The ink color |
 | `width` / `height` | Line length and wave band; with `strokeWidth`, the writing's size |
 | `strokeWidth` | Pen thickness |
-| `wavelength` | Pixels per peak-and-valley cycle — the writing's frequency |
+| `wavelength` | Pixels per peak-and-valley cycle, the writing's frequency |
 | `seed` | Varies the handwriting; two lines with the same knobs read as different sentences |
 | `fontStyle` | Mirrors `TextStyle.fontStyle`; italic slants the stroke |
 | `style` | `sketch` (uniform drawn wave, default) or `wave` (irregular scrawl) |
@@ -92,7 +87,7 @@ stroke, no actual words.
 ### Customizing the palette
 
 `LowframerPalette.of(context)` derives from the ambient `ColorScheme` by
-default — the art follows your theme, dark mode included, with no extra
+default, so the art follows your theme, dark mode included, with no extra
 code. To customize, scope a palette over a subtree with `LowframerTheme`;
 everything below it (including `LowframerWindow` and `LowframerCover`, which
 resolve internally) picks it up:
