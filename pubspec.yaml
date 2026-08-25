@@ -1,6 +1,6 @@
 name: lowframer
 description: "A tiny kit for drawing low-fidelity wireframe art: miniature, theme-aware UI illustrations built from code, no assets."
-version: 0.1.0
+version: 0.2.0
 repository: https://github.com/luisburgos/lowframer
 
 # Max 5, lowercase alphanumeric or hyphens, 2-32 chars each.
