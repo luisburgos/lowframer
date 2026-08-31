@@ -13,6 +13,12 @@ dependencies:
   lowframer:
     path: ../
   playgrounder: ^0.2.0
+  # The gallery shell the example's art grid is laid out by. A git dependency
+  # while showcaser is unpublished; swaps to the pub version at its release.
+  showcaser:
+    git:
+      url: https://github.com/luisburgos/showcaser
+      ref: main
 
 dev_dependencies:
   flutter_test:

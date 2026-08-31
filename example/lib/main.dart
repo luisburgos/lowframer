@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lowframer/lowframer.dart';
 import 'package:playgrounder/playgrounder.dart';
+import 'package:showcaser/showcaser.dart';
 
 void main() => runApp(const ExampleApp());
 
@@ -246,38 +247,43 @@ class _GalleryPageState extends State<GalleryPage> {
   ];
 
   /// The same six arts render for every palette; only the source changes.
-  static const _arts = <Widget>[
-    LowframerCover(child: ButtonsArt()),
-    LowframerCover(child: TypographyArt()),
-    LowframerCover(child: ProfileFormArt()),
-    LowframerCover(child: DashboardArt()),
-    LowframerCover(child: ChatThreadArt()),
-    LowframerCover(child: SettingsListArt()),
+  ///
+  /// Each is a showcaser entry: the art is passed already wrapped in a
+  /// [LowframerCover], because showcaser draws cover art as given rather than
+  /// supplying a panel of its own.
+  static final _entries = <ShowcaseEntry>[
+    for (final (title, subtitle, art) in <(String, String, Widget)>[
+      ('Buttons', 'Pill silhouettes, one accent', const ButtonsArt()),
+      ('Typography', 'Scribbles of falling weight', const TypographyArt()),
+      (
+        'Profile form',
+        'Avatar, labeled fields, submit',
+        const ProfileFormArt(),
+      ),
+      ('Dashboard', 'Top bar, stat tiles, bars', const DashboardArt()),
+      (
+        'Chat thread',
+        'Alternating bubbles, compose bar',
+        const ChatThreadArt(),
+      ),
+      ('Settings list', 'Icon rows with toggles', const SettingsListArt()),
+    ])
+      ShowcaseEntry(
+        title: title,
+        subtitle: subtitle,
+        coverArt: (_) => LowframerCover(child: art),
+        builder: (_) => _ArtPage(title: title, art: art),
+      ),
   ];
 
-  /// A responsive grid: 4, 3, 2 or 1 columns depending on the width the
-  /// gallery is actually given.
-  Widget _gallery() => LayoutBuilder(
-    builder: (context, constraints) {
-      final width = constraints.maxWidth;
-      final columns = switch (width) {
-        >= 1100 => 4,
-        >= 800 => 3,
-        >= 520 => 2,
-        _ => 1,
-      };
-      return GridView(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: columns,
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8,
-          mainAxisExtent: 150,
-        ),
-        children: _arts,
-      );
-    },
+  /// The gallery, laid out by showcaser.
+  ///
+  /// Replaces a hand-rolled GridView with hardcoded breakpoints: the shared
+  /// list measures the width it is actually given and lets each row size to
+  /// its own tallest tile, which a fixed-extent grid cannot do.
+  Widget _gallery() => ShowcaseEntryList(
+    entries: _entries,
+    padding: EdgeInsets.zero,
   );
 
   /// Edits one role of `base`, producing a custom palette configuration.
@@ -421,6 +427,25 @@ class _GalleryPageState extends State<GalleryPage> {
           },
         ),
       ),
+    );
+  }
+}
+
+/// Where a tapped gallery entry lands: the art alone, at rest.
+///
+/// The gallery routes to a page per entry, so the example shows what that
+/// looks like rather than leaving the tiles inert.
+class _ArtPage extends StatelessWidget {
+  const _ArtPage({required this.title, required this.art});
+
+  final String title;
+  final Widget art;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(child: art),
     );
   }
 }
