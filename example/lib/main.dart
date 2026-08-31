@@ -281,9 +281,15 @@ class _GalleryPageState extends State<GalleryPage> {
   /// Replaces a hand-rolled GridView with hardcoded breakpoints: the shared
   /// list measures the width it is actually given and lets each row size to
   /// its own tallest tile, which a fixed-extent grid cannot do.
+  ///
+  /// Shrink-wrapped and non-scrolling because the playground's preview stage
+  /// already scrolls: the gallery sizes to its content and leaves the drag to
+  /// the stage, rather than the two competing for it.
   Widget _gallery() => ShowcaseEntryList(
     entries: _entries,
     padding: EdgeInsets.zero,
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
   );
 
   /// Edits one role of `base`, producing a custom palette configuration.
