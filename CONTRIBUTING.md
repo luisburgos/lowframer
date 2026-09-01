@@ -107,7 +107,8 @@ This is enforced by `tool/check_version_bump_is_alone.sh`, which the
 pubspec.yaml  package.json  package-lock.json  README.md  CHANGELOG.md
 ```
 
-Run it yourself before pushing, rather than finding out from CI:
+The pre-push hook runs it too, so a piggy-backed bump is refused before the
+branch reaches the remote and no CI run is spent saying so. To check by hand:
 
 ```sh
 tool/check_version_bump_is_alone.sh

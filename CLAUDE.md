@@ -18,10 +18,10 @@ rules below are the hard gates an agent must not cross on its own judgment.
   feature work has already landed on `main`. Squash-merge destroys the branch's
   commits, so a piggy-backed bump erases the release from history entirely.
   If you notice mid-branch that a release is due, finish and land the branch
-  first, then start a fresh one for the bump. Verify with
-  `tool/check_version_bump_is_alone.sh` before pushing; CI runs the same script
-  as `version_bump_is_alone`. Do not rely on the gate to catch it: a red CI run
-  on a branch that should never have existed has already cost a build.
+  first, then start a fresh one for the bump. The pre-push hook and CI both
+  run `tool/check_version_bump_is_alone.sh`, so a piggy-backed bump is
+  refused before it reaches the remote. Do not rely on either to catch it: a
+  branch that should never have existed still costs the time to make it.
 
 ## Release checklist pointers
 
