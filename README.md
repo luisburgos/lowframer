@@ -37,7 +37,7 @@ Or add it to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  lowframer: ^0.2.0
+  lowframer: ^0.3.0
 ```
 
 ## Usage 🚀
