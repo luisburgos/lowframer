@@ -99,12 +99,18 @@ history the moment the PR merges. What survives on `main` is a single `feat:`
 commit, and the release leaves no trace in the log at all. That is how 0.3.0
 shipped with no `chore(release)` commit, while 0.2.0 has `86c8789`.
 
-The `version_bump_is_alone` CI job enforces this: a PR that changes the
-version in `pubspec.yaml` or `package.json` fails unless every file it
-touches is one of
+This is enforced by `tool/check_version_bump_is_alone.sh`, which the
+`version_bump_is_alone` CI job runs. A PR that changes the version in
+`pubspec.yaml` or `package.json` fails unless every file it touches is one of
 
 ```
 pubspec.yaml  package.json  package-lock.json  README.md  CHANGELOG.md
+```
+
+Run it yourself before pushing, rather than finding out from CI:
+
+```sh
+tool/check_version_bump_is_alone.sh
 ```
 
 If it fails, the fix is never to widen the allowlist. Drop the bump from the

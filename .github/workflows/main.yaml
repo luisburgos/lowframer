@@ -87,64 +87,17 @@ jobs:
       - name: Test
         run: '[ -d test ] && flutter test || echo "no tests in ${{ matrix.package }}"'
 
-  # A version bump must arrive as its own PR.
-  #
-  # This repository squash-merges, so a bump committed inside a feature branch
-  # is erased along with the rest of that branch's history: the release leaves
-  # no `chore(release)` commit on main and becomes invisible in `git log`.
-  # That is what happened to 0.3.0, whose bump vanished into the feature PR
-  # that carried it, unlike 0.2.0's own `86c8789`.
-  #
-  # The rule is mechanical, so it is enforced mechanically rather than
-  # remembered: a PR that changes the version may change nothing else.
+  # A version bump must arrive as its own PR: squash-merge would otherwise
+  # destroy the bump commit along with the feature branch, leaving the release
+  # with no commit of its own on main. The check lives in a script so it can be
+  # run and tested locally rather than only on a pushed branch.
   version_bump_is_alone:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
-          # The three-dot diff below needs the merge base, not a shallow tip.
+          # The three-dot diff needs the merge base, not a shallow tip.
           fetch-depth: 0
 
       - name: A version bump must be its own PR
-        run: |
-          set -euo pipefail
-          base="origin/${{ github.base_ref }}"
-
-          version_touched=false
-          if git diff "$base"...HEAD -- pubspec.yaml | grep -qE '^\+version:'; then
-            version_touched=true
-          fi
-          if git diff "$base"...HEAD -- package.json | grep -qE '^\+  "version"'; then
-            version_touched=true
-          fi
-
-          if [ "$version_touched" = false ]; then
-            echo "No version change in this PR. Nothing to check."
-            exit 0
-          fi
-
-          # The files CONTRIBUTING requires to move together for a release,
-          # plus the two the bump regenerates.
-          allowed="pubspec.yaml package.json package-lock.json README.md CHANGELOG.md"
-
-          # Read line by line: paths may contain spaces, so word splitting the
-          # whole list is not safe.
-          offending=""
-          while IFS= read -r f; do
-            [ -z "$f" ] && continue
-            case " $allowed " in
-              *" $f "*) ;;
-              *) offending="$offending $f" ;;
-            esac
-          done < <(git diff --name-only "$base"...HEAD)
-
-          if [ -n "$offending" ]; then
-            echo "::error::A version bump must be its own PR. This one also changes:$offending"
-            echo ""
-            echo "Land the other work first, then open a separate"
-            echo "'chore(release): bump to X.Y.Z' PR touching only:"
-            echo "  $allowed"
-            exit 1
-          fi
-
-          echo "Version bump is alone. OK."
+        run: tool/check_version_bump_is_alone.sh "origin/${{ github.base_ref }}"
