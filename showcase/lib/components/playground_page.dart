@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lowframer_showcase/components/app_settings.dart';
 import 'package:playgrounder/playgrounder.dart';
 
 /// The shared chrome for every Library playground page.
@@ -59,6 +60,7 @@ class PlaygroundPage<T> extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
+        actions: const [AppSettingsActions()],
         // The playground runs edge to edge, so the bar needs its own rule to
         // separate itself from the preview rather than relying on padding.
         bottom: PreferredSize(

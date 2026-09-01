@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lowframer/lowframer.dart';
 import 'package:lowframer_showcase/arts/arts.dart';
+import 'package:lowframer_showcase/components/app_settings.dart';
 import 'package:playgrounder/playgrounder.dart';
 
 /// Custom palettes modeled on common terminal color styles.
@@ -270,6 +271,7 @@ class _ThemingPageState extends State<ThemingPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Theming'),
+        actions: const [AppSettingsActions()],
         // A full-width hairline where the app bar meets the playground, so the
         // chrome reads as separate from the preview and inspector below it.
         bottom: PreferredSize(

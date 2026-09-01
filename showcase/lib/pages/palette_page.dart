@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lowframer/lowframer.dart';
+import 'package:lowframer_showcase/components/app_settings.dart';
 
 /// The six roles a composition paints with.
 ///
@@ -19,6 +20,7 @@ class PalettePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Palette'),
+        actions: const [AppSettingsActions()],
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),

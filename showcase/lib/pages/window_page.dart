@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lowframer/lowframer.dart';
 import 'package:lowframer_showcase/arts/arts.dart';
+import 'package:lowframer_showcase/components/app_settings.dart';
 
 /// The two frames, shown together.
 ///
@@ -22,6 +23,7 @@ class WindowPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Window & cover'),
+        actions: const [AppSettingsActions()],
         centerTitle: true,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
