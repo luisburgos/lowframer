@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lowframer_showcase/catalogue.dart';
+import 'package:lowframer_showcase/components/seed_color_button.dart';
 import 'package:lowframer_showcase/pages/palette_gallery_page.dart';
 import 'package:showcaser/showcaser.dart';
 
@@ -61,14 +62,14 @@ class _ExampleAppState extends State<ExampleApp> {
       // The scope sits above the navigator so a pushed example route resolves
       // the same app-level state the index does.
       builder: (context, child) => ExampleRouteScope(
-        paletteGallery: (context) => PaletteGalleryPage(
-          seed: _seed,
-          onSeedChanged: (color) => setState(() => _seed = color),
-          onToggleTheme: () => _toggleMode(context),
-        ),
+        paletteGallery: (context) => const PaletteGalleryPage(),
         child: child!,
       ),
-      home: HomePage(onToggleTheme: () => _toggleMode(context)),
+      home: HomePage(
+        seed: _seed,
+        onSeedChanged: (color) => setState(() => _seed = color),
+        onToggleTheme: () => _toggleMode(context),
+      ),
     );
   }
 }
@@ -87,8 +88,20 @@ const double _kContentMaxWidth = 1200;
 /// "what can I draw with", a composition answers "what does it add up to", and
 /// a reader is usually after one or the other.
 class HomePage extends StatefulWidget {
-  const HomePage({required this.onToggleTheme, super.key});
+  const HomePage({
+    required this.seed,
+    required this.onSeedChanged,
+    required this.onToggleTheme,
+    super.key,
+  });
 
+  /// The seed currently driving the scheme.
+  final Color seed;
+
+  /// Called with a newly picked seed.
+  final ValueChanged<Color> onSeedChanged;
+
+  /// Flips between light and dark.
   final VoidCallback onToggleTheme;
 
   @override
@@ -111,6 +124,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Scaffold(
       appBar: AppBar(
         title: const Text('lowframer'),
+        // Pinned rather than left to the platform default, which centers on
+        // iOS and left-aligns elsewhere — so the title moved depending on the
+        // viewport Flutter web inferred a platform from.
+        centerTitle: true,
         bottom: TabBar(
           controller: _tabs,
           tabs: const [
@@ -118,7 +135,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Tab(text: 'Examples'),
           ],
         ),
+        // Both switches are app-level — the seed drives the whole
+        // ColorScheme, the toggle its brightness — so they sit together in the
+        // chrome rather than inside any one page.
         actions: [
+          SeedColorButton(
+            seeds: seedColors,
+            selected: widget.seed,
+            onChanged: widget.onSeedChanged,
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: IconButton(
