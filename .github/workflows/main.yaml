@@ -81,3 +81,8 @@ jobs:
 
       - name: Analyze
         run: flutter analyze
+
+      # Only if the sub-package has tests: the example has none, and a bare
+      # `flutter test` fails rather than skipping when there is no test dir.
+      - name: Test
+        run: '[ -d test ] && flutter test || echo "no tests in ${{ matrix.package }}"'
