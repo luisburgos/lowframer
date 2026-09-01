@@ -1,56 +1,93 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:lowframer/lowframer.dart';
 import 'package:lowframer_showcase/arts/arts.dart';
-import 'package:lowframer_showcase/components/app_settings.dart';
+import 'package:lowframer_showcase/components/playground_page.dart';
+import 'package:playgrounder/playgrounder.dart';
 
-/// The two frames, shown together.
+/// The state of the frames preview.
+class FramesConfig extends Equatable {
+  /// Creates a frames configuration.
+  const FramesConfig({this.frame = LowframerFrame.desktop});
+
+  /// The shape the art is framed at.
+  final LowframerFrame frame;
+
+  /// A copy with the given fields replaced.
+  FramesConfig copyWith({LowframerFrame? frame}) =>
+      FramesConfig(frame: frame ?? this.frame);
+
+  @override
+  List<Object?> get props => [frame];
+}
+
+/// One preset per frame, because the frame is what varies.
+const _presets = <PlaygroundPreset<FramesConfig>>[
+  PlaygroundPreset(
+    label: 'Desktop',
+    summary: 'Landscape, the shape a desktop or web view is sketched at.',
+    config: FramesConfig(),
+  ),
+  PlaygroundPreset(
+    label: 'Tablet',
+    summary: 'Squarer, for a tablet.',
+    config: FramesConfig(frame: LowframerFrame.tablet),
+  ),
+  PlaygroundPreset(
+    label: 'Mobile',
+    summary: 'Portrait, for a phone.',
+    config: FramesConfig(frame: LowframerFrame.mobile),
+  ),
+];
+
+/// The frames a composition is drawn at, and the panel one sits on.
 ///
-/// A reference page, not a playground. Neither widget takes a styling
-/// argument — [LowframerWindow] is a fixed 160x120 canvas and [LowframerCover]
-/// takes nothing but a child — so there is no configuration to step through.
-/// What is worth seeing is the *relationship*: the cover is a full-width panel
-/// that centres a window on it, which a toggle between the two would hide
-/// rather than show.
-///
-/// When the window grows an orientation (see lowframer#18), that becomes a
-/// real axis and this page earns presets.
-class WindowPage extends StatelessWidget {
-  /// Creates the window and cover reference.
+/// Both are shown together because the interesting thing is the
+/// *relationship*: [LowframerCover] is a full-width panel that centres a
+/// [LowframerWindow] on it, and its height derives from the same frame, so the
+/// two cannot disagree. A toggle between them would hide that.
+class WindowPage extends StatefulWidget {
+  /// Creates the frames playground.
   const WindowPage({super.key});
 
   @override
+  State<WindowPage> createState() => _WindowPageState();
+}
+
+class _WindowPageState extends State<WindowPage> {
+  FramesConfig _config = const FramesConfig();
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Window & cover'),
-        actions: const [AppSettingsActions()],
-        centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(
-            height: 1,
-            thickness: 1,
-            color: Theme.of(context).colorScheme.outlineVariant,
+    return PlaygroundPage<FramesConfig>(
+      title: 'Frames',
+      config: _config,
+      onChanged: (c) => setState(() => _config = c),
+      presets: _presets,
+      previewMaxWidth: 560,
+      previewBuilder: (context, config) => _Frames(frame: config.frame),
+      knobsBuilder: (context, config, onChanged) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 16,
+        children: [
+          DropdownKnob<LowframerFrame>(
+            label: 'Frame',
+            value: config.frame,
+            values: LowframerFrame.values,
+            labelOf: (f) =>
+                '${f.name}  ${f.size.width.toInt()}×${f.size.height.toInt()}',
+            onChanged: (v) => onChanged(config.copyWith(frame: v)),
           ),
-        ),
-      ),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 640),
-              child: const _Frames(),
-            ),
-          ),
-        ),
+        ],
       ),
     );
   }
 }
 
 class _Frames extends StatelessWidget {
-  const _Frames();
+  const _Frames({required this.frame});
+
+  final LowframerFrame frame;
 
   @override
   Widget build(BuildContext context) {
@@ -85,21 +122,26 @@ class _Frames extends StatelessWidget {
         labelled(
           name: 'Window',
           note:
-              'A fixed 160×120 canvas. Every composition draws inside one, '
-              'so each carries the same optical weight.',
+              'A fixed '
+              '${frame.size.width.toInt()}×${frame.size.height.toInt()} '
+              'canvas. Every composition at a given frame carries the same '
+              'optical weight.',
           // Aligned left rather than stretched: the window does not grow, and
-          // centring it here would hide that.
-          child: const Align(
+          // centring it would hide that.
+          child: Align(
             alignment: Alignment.centerLeft,
-            child: DashboardArt(),
+            child: DashboardArt(frame: frame),
           ),
         ),
         labelled(
           name: 'Cover',
           note:
-              'A full-width panel with a window centred on it, as it sits '
-              'on a gallery card.',
-          child: const LowframerCover(child: DashboardArt()),
+              'A full-width panel with the window centred on it. Its height '
+              'derives from the same frame, so the two cannot disagree.',
+          child: LowframerCover(
+            frame: frame,
+            child: DashboardArt(frame: frame),
+          ),
         ),
       ],
     );

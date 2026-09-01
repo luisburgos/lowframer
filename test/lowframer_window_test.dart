@@ -6,7 +6,7 @@ void main() {
   Widget harness(Widget child) => MaterialApp(home: Center(child: child));
 
   group('LowframerWindow', () {
-    testWidgets('frames its child at the fixed 160x120 footprint', (
+    testWidgets('frames its child at the desktop footprint by default', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -19,10 +19,28 @@ void main() {
       );
       expect(find.text('art'), findsOneWidget);
     });
+
+    testWidgets('takes the footprint of the frame it is given', (tester) async {
+      for (final frame in LowframerFrame.values) {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Center(
+              child: LowframerWindow(frame: frame, child: const SizedBox()),
+            ),
+          ),
+        );
+
+        expect(
+          tester.getSize(find.byType(LowframerWindow)),
+          frame.size,
+          reason: '${frame.name} should frame at ${frame.size}',
+        );
+      }
+    });
   });
 
   group('LowframerCover', () {
-    testWidgets('spans the available width at the fixed panel height', (
+    testWidgets('spans the available width at the desktop panel height', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -36,6 +54,26 @@ void main() {
 
       expect(tester.getSize(find.byType(LowframerCover)), const Size(400, 150));
       expect(find.text('art'), findsOneWidget);
+    });
+
+    testWidgets('a cover grows with the frame it is given', (tester) async {
+      // The panel derives its height from the frame, so a cover and the window
+      // it holds cannot disagree.
+      for (final frame in LowframerFrame.values) {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Center(
+              child: LowframerCover(frame: frame, child: const SizedBox()),
+            ),
+          ),
+        );
+
+        expect(
+          tester.getSize(find.byType(LowframerCover)).height,
+          greaterThan(frame.size.height),
+          reason: '${frame.name} panel must clear its window',
+        );
+      }
     });
   });
 }

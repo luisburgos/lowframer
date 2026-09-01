@@ -27,8 +27,8 @@ final libraryEntries = <ShowcaseEntry>[
     builder: (_) => const ScribblePage(),
   ),
   ShowcaseEntry(
-    title: 'Window & cover',
-    subtitle: 'The fixed canvas art is drawn on, and the panel it sits on',
+    title: 'Frames',
+    subtitle: 'The shapes art is drawn at, and the panel one sits on',
     coverArt: (_) => const LowframerCover(child: DashboardArt()),
     builder: (_) => const WindowPage(),
   ),
