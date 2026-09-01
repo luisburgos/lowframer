@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:lowframer/lowframer.dart';
 import 'package:lowframer_showcase/arts/arts.dart';
 import 'package:playgrounder/playgrounder.dart';
-import 'package:showcaser/showcaser.dart';
 
 /// Custom palettes modeled on common terminal color styles.
 ///
@@ -129,18 +128,22 @@ class _CustomPalette extends _PaletteConfig {
   int get hashCode => palette.hashCode;
 }
 
-/// The palette playground: six compositions repainted live.
+/// Where a palette comes from: derived, preset, or hand-built.
 ///
-/// The example where the *composition* is the point — one palette change
-/// carries across all six arts at once, which no single primitive shows.
-class PaletteGalleryPage extends StatefulWidget {
-  const PaletteGalleryPage({super.key});
+/// The presets are the point. "Themed" derives every role from the ambient
+/// ColorScheme, so the art follows dark mode and the seed on its own; the
+/// terminal palettes are a LowframerTheme override, held whatever the app
+/// theme does; and the role knobs build an override by hand. Six arts render
+/// at once so one change is visible across all of them, which no single
+/// primitive shows.
+class ThemingPage extends StatefulWidget {
+  const ThemingPage({super.key});
 
   @override
-  State<PaletteGalleryPage> createState() => _PaletteGalleryPageState();
+  State<ThemingPage> createState() => _ThemingPageState();
 }
 
-class _PaletteGalleryPageState extends State<PaletteGalleryPage> {
+class _ThemingPageState extends State<ThemingPage> {
   _PaletteConfig _config = const _ThemedPalette();
 
   /// The playground's presets: the theme-derived palette first, then each
@@ -178,50 +181,29 @@ class _PaletteGalleryPageState extends State<PaletteGalleryPage> {
     ),
   ];
 
-  /// The same six arts render for every palette; only the source changes.
+  /// The six arts, rendered together so one palette change is visible across
+  /// all of them at once.
   ///
-  /// Each is a showcaser entry: the art is passed already wrapped in a
-  /// [LowframerCover], because showcaser draws cover art as given rather than
-  /// supplying a panel of its own.
-  static final _entries = <ShowcaseEntry>[
-    for (final (title, subtitle, art) in <(String, String, Widget)>[
-      ('Buttons', 'Pill silhouettes, one accent', const ButtonsArt()),
-      ('Typography', 'Scribbles of falling weight', const TypographyArt()),
-      (
-        'Profile form',
-        'Avatar, labeled fields, submit',
-        const ProfileFormArt(),
-      ),
-      ('Dashboard', 'Top bar, stat tiles, bars', const DashboardArt()),
-      (
-        'Chat thread',
-        'Alternating bubbles, compose bar',
-        const ChatThreadArt(),
-      ),
-      ('Settings list', 'Icon rows with toggles', const SettingsListArt()),
-    ])
-      ShowcaseEntry(
-        title: title,
-        subtitle: subtitle,
-        coverArt: (_) => LowframerCover(child: art),
-        builder: (_) => _ArtPage(title: title, art: art),
-      ),
+  /// A plain Wrap rather than a ShowcaseEntryList: these are the previewed
+  /// subject, not navigation. Laying them out with the widget the index uses
+  /// for its own tabs gave them tappable-card affordances and made the page
+  /// read as a level you could descend into, which it never was.
+  /// A cover panel spans whatever width it is given, so each is bounded here;
+  /// unbounded, a Wrap would give the first one the whole row.
+  static const _arts = <Widget>[
+    SizedBox(width: 220, child: LowframerCover(child: ButtonsArt())),
+    SizedBox(width: 220, child: LowframerCover(child: TypographyArt())),
+    SizedBox(width: 220, child: LowframerCover(child: ProfileFormArt())),
+    SizedBox(width: 220, child: LowframerCover(child: DashboardArt())),
+    SizedBox(width: 220, child: LowframerCover(child: ChatThreadArt())),
+    SizedBox(width: 220, child: LowframerCover(child: SettingsListArt())),
   ];
 
-  /// The gallery, laid out by showcaser.
-  ///
-  /// Replaces a hand-rolled GridView with hardcoded breakpoints: the shared
-  /// list measures the width it is actually given and lets each row size to
-  /// its own tallest tile, which a fixed-extent grid cannot do.
-  ///
-  /// Shrink-wrapped and non-scrolling because the playground's preview stage
-  /// already scrolls: the gallery sizes to its content and leaves the drag to
-  /// the stage, rather than the two competing for it.
-  Widget _gallery() => ShowcaseEntryList(
-    entries: _entries,
-    padding: EdgeInsets.zero,
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
+  Widget _gallery() => const Wrap(
+    spacing: 12,
+    runSpacing: 12,
+    alignment: WrapAlignment.center,
+    children: _arts,
   );
 
   /// Edits one role of `base`, producing a custom palette configuration.
@@ -287,7 +269,7 @@ class _PaletteGalleryPageState extends State<PaletteGalleryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Art gallery'),
+        title: const Text('Theming'),
         // A full-width hairline where the app bar meets the playground, so the
         // chrome reads as separate from the preview and inspector below it.
         bottom: PreferredSize(
@@ -345,25 +327,6 @@ class _PaletteGalleryPageState extends State<PaletteGalleryPage> {
           },
         ),
       ),
-    );
-  }
-}
-
-/// Where a tapped gallery entry lands: the art alone, at rest.
-///
-/// The gallery routes to a page per entry, so the example shows what that
-/// looks like rather than leaving the tiles inert.
-class _ArtPage extends StatelessWidget {
-  const _ArtPage({required this.title, required this.art});
-
-  final String title;
-  final Widget art;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(child: art),
     );
   }
 }
