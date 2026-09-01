@@ -3,51 +3,74 @@ import 'package:flutter/material.dart';
 import 'package:lowframer/lowframer.dart';
 import 'package:lowframer_showcase/arts/arts.dart';
 import 'package:lowframer_showcase/components/playground_page.dart';
+import 'package:lowframer_showcase/components/scale_lookup.dart';
 import 'package:playgrounder/playgrounder.dart';
 
-/// The state of the frames preview.
-class FramesConfig extends Equatable {
-  /// Creates a frames configuration.
-  const FramesConfig({this.frame = LowframerFrame.desktop});
+/// The widths a window is worth trying at.
+const _widths = <ScaleStep>[
+  ScaleStep('80', 80),
+  ScaleStep('100', 100),
+  ScaleStep('120', 120),
+  ScaleStep('150', 150),
+  ScaleStep('160', 160),
+  ScaleStep('200', 200),
+];
 
-  /// The shape the art is framed at.
-  final LowframerFrame frame;
+/// The heights a window is worth trying at.
+const _heights = <ScaleStep>[
+  ScaleStep('80', 80),
+  ScaleStep('100', 100),
+  ScaleStep('120', 120),
+  ScaleStep('140', 140),
+  ScaleStep('170', 170),
+  ScaleStep('200', 200),
+];
+
+/// The state of the window preview.
+class WindowConfig extends Equatable {
+  /// Creates a window configuration.
+  const WindowConfig({this.size = LowframerSizes.desktop});
+
+  /// The footprint the art is framed at.
+  final Size size;
 
   /// A copy with the given fields replaced.
-  FramesConfig copyWith({LowframerFrame? frame}) =>
-      FramesConfig(frame: frame ?? this.frame);
+  WindowConfig copyWith({double? width, double? height}) => WindowConfig(
+    size: Size(width ?? size.width, height ?? size.height),
+  );
 
   @override
-  List<Object?> get props => [frame];
+  List<Object?> get props => [size];
 }
 
-/// One preset per frame, because the frame is what varies.
-const _presets = <PlaygroundPreset<FramesConfig>>[
+/// One preset per shape, because the shape is what varies.
+const _presets = <PlaygroundPreset<WindowConfig>>[
   PlaygroundPreset(
     label: 'Desktop',
     summary: 'Landscape, the shape a desktop or web view is sketched at.',
-    config: FramesConfig(),
+    config: WindowConfig(),
   ),
   PlaygroundPreset(
     label: 'Tablet',
     summary: 'Squarer, for a tablet.',
-    config: FramesConfig(frame: LowframerFrame.tablet),
+    config: WindowConfig(size: LowframerSizes.tablet),
   ),
   PlaygroundPreset(
     label: 'Mobile',
     summary: 'Portrait, for a phone.',
-    config: FramesConfig(frame: LowframerFrame.mobile),
+    config: WindowConfig(size: LowframerSizes.mobile),
   ),
 ];
 
-/// The frames a composition is drawn at, and the panel one sits on.
+/// The canvas a composition is drawn on, and the panel it sits on.
 ///
-/// Both are shown together because the interesting thing is the
-/// *relationship*: [LowframerCover] is a full-width panel that centres a
-/// [LowframerWindow] on it, and its height derives from the same frame, so the
-/// two cannot disagree. A toggle between them would hide that.
+/// [LowframerCover] is a full-width panel that centres a [LowframerWindow] on
+/// it, and derives its height from the same size — so the two cannot disagree.
+/// The cover is a switch rather than a second column because it *wraps* the
+/// window rather than standing beside it: turning it on adds the panel to what
+/// is already there, which is what the relationship actually is.
 class WindowPage extends StatefulWidget {
-  /// Creates the frames playground.
+  /// Creates the window playground.
   const WindowPage({super.key});
 
   @override
@@ -55,28 +78,46 @@ class WindowPage extends StatefulWidget {
 }
 
 class _WindowPageState extends State<WindowPage> {
-  FramesConfig _config = const FramesConfig();
+  WindowConfig _config = const WindowConfig();
+
+  // A view option, held beside the configuration rather than in it.
+  bool _showCover = true;
 
   @override
   Widget build(BuildContext context) {
-    return PlaygroundPage<FramesConfig>(
-      title: 'Frames',
+    return PlaygroundPage<WindowConfig>(
+      title: 'Window & cover',
       config: _config,
       onChanged: (c) => setState(() => _config = c),
       presets: _presets,
       previewMaxWidth: 560,
-      previewBuilder: (context, config) => _Frames(frame: config.frame),
+      // Whether the panel is shown is a view option, not part of the
+      // configuration a preset describes, so it sits in the pinned footer and
+      // stays put while you page through the shapes.
+      footer: SwitchKnob(
+        label: 'Show cover',
+        value: _showCover,
+        onChanged: (v) => setState(() => _showCover = v),
+      ),
+      previewBuilder: (context, config) =>
+          _Preview(size: config.size, showCover: _showCover),
       knobsBuilder: (context, config, onChanged) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 16,
         children: [
-          DropdownKnob<LowframerFrame>(
-            label: 'Frame',
-            value: config.frame,
-            values: LowframerFrame.values,
-            labelOf: (f) =>
-                '${f.name}  ${f.size.width.toInt()}×${f.size.height.toInt()}',
-            onChanged: (v) => onChanged(config.copyWith(frame: v)),
+          // Any size, not just the named ones: the package takes a plain
+          // Size, and the presets are a convenience rather than a limit.
+          ScaleKnob(
+            label: 'Width',
+            value: stepFor(_widths, config.size.width),
+            values: _widths,
+            onChanged: (v) => onChanged(config.copyWith(width: v.value)),
+          ),
+          ScaleKnob(
+            label: 'Height',
+            value: stepFor(_heights, config.size.height),
+            values: _heights,
+            onChanged: (v) => onChanged(config.copyWith(height: v.value)),
           ),
         ],
       ),
@@ -84,66 +125,22 @@ class _WindowPageState extends State<WindowPage> {
   }
 }
 
-class _Frames extends StatelessWidget {
-  const _Frames({required this.frame});
+class _Preview extends StatelessWidget {
+  const _Preview({required this.size, required this.showCover});
 
-  final LowframerFrame frame;
+  final Size size;
+  final bool showCover;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final art = DashboardArt(size: size);
 
-    Widget labelled({
-      required String name,
-      required String note,
-      required Widget child,
-    }) => Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 10,
-        children: [
-          Text(name, style: theme.textTheme.titleSmall),
-          Text(
-            note,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 4),
-          child,
-        ],
-      ),
-    );
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 24,
-      children: [
-        labelled(
-          name: 'Window',
-          note:
-              'A fixed '
-              '${frame.size.width.toInt()}×${frame.size.height.toInt()} '
-              'canvas. Every composition at a given frame carries the same '
-              'optical weight.',
-          // Aligned left rather than stretched: the window does not grow, and
-          // centring it would hide that.
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: DashboardArt(frame: frame),
-          ),
-        ),
-        labelled(
-          name: 'Cover',
-          note:
-              'A full-width panel with the window centred on it. Its height '
-              'derives from the same frame, so the two cannot disagree.',
-          child: LowframerCover(
-            frame: frame,
-            child: DashboardArt(frame: frame),
-          ),
-        ),
-      ],
+    // One subject, not two labelled columns: the cover is the window with a
+    // panel around it, so showing them as peers made a composition read as a
+    // comparison. The switch adds the panel to what is already there.
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: showCover ? LowframerCover(windowSize: size, child: art) : art,
     );
   }
 }

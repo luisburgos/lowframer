@@ -3,16 +3,16 @@ import 'package:lowframer/lowframer.dart';
 
 /// A miniature "buttons" illustration: pill silhouettes, one accent.
 class ButtonsArt extends StatelessWidget {
-  const ButtonsArt({this.frame = LowframerFrame.desktop, super.key});
+  const ButtonsArt({this.size = LowframerSizes.desktop, super.key});
 
-  /// The shape to frame this composition at.
-  final LowframerFrame frame;
+  /// The footprint to frame this composition at.
+  final Size size;
 
   @override
   Widget build(BuildContext context) {
     final palette = LowframerPalette.of(context);
     return LowframerWindow(
-      frame: frame,
+      size: size,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -34,16 +34,16 @@ class ButtonsArt extends StatelessWidget {
 
 /// A miniature "typography" illustration: scribbles of falling weight.
 class TypographyArt extends StatelessWidget {
-  const TypographyArt({this.frame = LowframerFrame.desktop, super.key});
+  const TypographyArt({this.size = LowframerSizes.desktop, super.key});
 
-  /// The shape to frame this composition at.
-  final LowframerFrame frame;
+  /// The footprint to frame this composition at.
+  final Size size;
 
   @override
   Widget build(BuildContext context) {
     final palette = LowframerPalette.of(context);
     return LowframerWindow(
-      frame: frame,
+      size: size,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -79,16 +79,16 @@ class TypographyArt extends StatelessWidget {
 
 /// A miniature profile form: avatar, labeled fields, accent submit.
 class ProfileFormArt extends StatelessWidget {
-  const ProfileFormArt({this.frame = LowframerFrame.desktop, super.key});
+  const ProfileFormArt({this.size = LowframerSizes.desktop, super.key});
 
-  /// The shape to frame this composition at.
-  final LowframerFrame frame;
+  /// The footprint to frame this composition at.
+  final Size size;
 
   @override
   Widget build(BuildContext context) {
     final palette = LowframerPalette.of(context);
     return LowframerWindow(
-      frame: frame,
+      size: size,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -131,16 +131,16 @@ class ProfileFormArt extends StatelessWidget {
 
 /// A miniature dashboard: top bar, stat tiles, bars, list lines.
 class DashboardArt extends StatelessWidget {
-  const DashboardArt({this.frame = LowframerFrame.desktop, super.key});
+  const DashboardArt({this.size = LowframerSizes.desktop, super.key});
 
-  /// The shape to frame this composition at.
-  final LowframerFrame frame;
+  /// The footprint to frame this composition at.
+  final Size size;
 
   @override
   Widget build(BuildContext context) {
     final palette = LowframerPalette.of(context);
     return LowframerWindow(
-      frame: frame,
+      size: size,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -202,16 +202,16 @@ class DashboardArt extends StatelessWidget {
 
 /// A miniature chat thread: alternating bubbles and a compose bar.
 class ChatThreadArt extends StatelessWidget {
-  const ChatThreadArt({this.frame = LowframerFrame.desktop, super.key});
+  const ChatThreadArt({this.size = LowframerSizes.desktop, super.key});
 
-  /// The shape to frame this composition at.
-  final LowframerFrame frame;
+  /// The footprint to frame this composition at.
+  final Size size;
 
   @override
   Widget build(BuildContext context) {
     final palette = LowframerPalette.of(context);
     return LowframerWindow(
-      frame: frame,
+      size: size,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -252,10 +252,10 @@ class ChatThreadArt extends StatelessWidget {
 
 /// A miniature settings list: icon rows with toggles, one active.
 class SettingsListArt extends StatelessWidget {
-  const SettingsListArt({this.frame = LowframerFrame.desktop, super.key});
+  const SettingsListArt({this.size = LowframerSizes.desktop, super.key});
 
-  /// The shape to frame this composition at.
-  final LowframerFrame frame;
+  /// The footprint to frame this composition at.
+  final Size size;
 
   @override
   Widget build(BuildContext context) {
@@ -279,7 +279,7 @@ class SettingsListArt extends StatelessWidget {
     );
 
     return LowframerWindow(
-      frame: frame,
+      size: size,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.center,

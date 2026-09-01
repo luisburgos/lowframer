@@ -20,21 +20,25 @@ void main() {
       expect(find.text('art'), findsOneWidget);
     });
 
-    testWidgets('takes the footprint of the frame it is given', (tester) async {
-      for (final frame in LowframerFrame.values) {
+    testWidgets('takes the footprint it is given', (tester) async {
+      const sizes = [
+        LowframerSizes.desktop,
+        LowframerSizes.tablet,
+        LowframerSizes.mobile,
+        // An arbitrary size: the named ones are a convenience, not a limit.
+        Size(200, 80),
+      ];
+
+      for (final size in sizes) {
         await tester.pumpWidget(
           MaterialApp(
             home: Center(
-              child: LowframerWindow(frame: frame, child: const SizedBox()),
+              child: LowframerWindow(size: size, child: const SizedBox()),
             ),
           ),
         );
 
-        expect(
-          tester.getSize(find.byType(LowframerWindow)),
-          frame.size,
-          reason: '${frame.name} should frame at ${frame.size}',
-        );
+        expect(tester.getSize(find.byType(LowframerWindow)), size);
       }
     });
   });
@@ -56,22 +60,31 @@ void main() {
       expect(find.text('art'), findsOneWidget);
     });
 
-    testWidgets('a cover grows with the frame it is given', (tester) async {
-      // The panel derives its height from the frame, so a cover and the window
+    testWidgets('grows with the window size it is given', (tester) async {
+      // The panel derives its height from the size, so a cover and the window
       // it holds cannot disagree.
-      for (final frame in LowframerFrame.values) {
+      const sizes = [
+        LowframerSizes.desktop,
+        LowframerSizes.tablet,
+        LowframerSizes.mobile,
+      ];
+
+      for (final size in sizes) {
         await tester.pumpWidget(
           MaterialApp(
             home: Center(
-              child: LowframerCover(frame: frame, child: const SizedBox()),
+              child: LowframerCover(
+                windowSize: size,
+                child: const SizedBox(),
+              ),
             ),
           ),
         );
 
         expect(
           tester.getSize(find.byType(LowframerCover)).height,
-          greaterThan(frame.size.height),
-          reason: '${frame.name} panel must clear its window',
+          greaterThan(size.height),
+          reason: 'the panel must clear a $size window',
         );
       }
     });
