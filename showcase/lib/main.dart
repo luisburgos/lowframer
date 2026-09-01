@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lowframer_showcase/catalogue.dart';
-import 'package:lowframer_showcase/components/seed_color_button.dart';
+import 'package:lowframer_showcase/components/app_settings.dart';
 import 'package:showcaser/showcaser.dart';
 
 void main() => runApp(const ExampleApp());
@@ -58,11 +58,16 @@ class _ExampleAppState extends State<ExampleApp> {
         ),
       ),
       themeMode: _mode,
-      home: HomePage(
+      // Above the navigator, so a pushed page's chrome resolves the same
+      // switches the index does.
+      builder: (context, child) => AppSettings(
         seed: _seed,
+        seeds: seedColors,
         onSeedChanged: (color) => setState(() => _seed = color),
-        onToggleTheme: () => _toggleMode(context),
+        onToggleBrightness: () => _toggleMode(context),
+        child: child!,
       ),
+      home: const HomePage(),
     );
   }
 }
@@ -81,21 +86,7 @@ const double _kContentMaxWidth = 1200;
 /// "what can I draw with", a composition answers "what does it add up to", and
 /// a reader is usually after one or the other.
 class HomePage extends StatefulWidget {
-  const HomePage({
-    required this.seed,
-    required this.onSeedChanged,
-    required this.onToggleTheme,
-    super.key,
-  });
-
-  /// The seed currently driving the scheme.
-  final Color seed;
-
-  /// Called with a newly picked seed.
-  final ValueChanged<Color> onSeedChanged;
-
-  /// Flips between light and dark.
-  final VoidCallback onToggleTheme;
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -112,8 +103,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('lowframer'),
@@ -128,24 +117,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Tab(text: 'Examples'),
           ],
         ),
-        // Both switches are app-level — the seed drives the whole
-        // ColorScheme, the toggle its brightness — so they sit together in the
-        // chrome rather than inside any one page.
-        actions: [
-          SeedColorButton(
-            seeds: seedColors,
-            selected: widget.seed,
-            onChanged: widget.onSeedChanged,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: IconButton(
-              tooltip: isDark ? 'Switch to light mode' : 'Switch to dark mode',
-              icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-              onPressed: widget.onToggleTheme,
-            ),
-          ),
-        ],
+        actions: const [AppSettingsActions()],
       ),
       // Centered under a max width so an ultrawide window widens the margins
       // instead of the cards.

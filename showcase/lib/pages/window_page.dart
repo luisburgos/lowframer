@@ -1,121 +1,107 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:lowframer/lowframer.dart';
 import 'package:lowframer_showcase/arts/arts.dart';
-import 'package:lowframer_showcase/components/playground_page.dart';
-import 'package:playgrounder/playgrounder.dart';
+import 'package:lowframer_showcase/components/app_settings.dart';
 
-/// Which of the two frames the art is shown in.
-enum WindowFrame {
-  /// The bare window: the fixed miniature canvas art is drawn on.
-  window,
-
-  /// The window centered on a full-width cover panel, as it sits on a card.
-  cover,
-}
-
-/// Which art fills the frame.
-enum WindowSubject { buttons, dashboard, chatThread, settingsList }
-
-/// The state of the [LowframerWindow] preview.
-class WindowConfig extends Equatable {
-  /// Creates a window configuration.
-  const WindowConfig({
-    this.frame = WindowFrame.window,
-    this.subject = WindowSubject.dashboard,
-  });
-
-  /// Whether the art is framed bare or on a cover panel.
-  final WindowFrame frame;
-
-  /// The art inside the frame.
-  final WindowSubject subject;
-
-  /// A copy with the given fields replaced.
-  WindowConfig copyWith({WindowFrame? frame, WindowSubject? subject}) =>
-      WindowConfig(
-        frame: frame ?? this.frame,
-        subject: subject ?? this.subject,
-      );
-
-  @override
-  List<Object?> get props => [frame, subject];
-}
-
-const _presets = <PlaygroundPreset<WindowConfig>>[
-  PlaygroundPreset(
-    label: 'Window',
-    summary: 'The fixed miniature canvas every composition draws inside.',
-    config: WindowConfig(),
-  ),
-  PlaygroundPreset(
-    label: 'Cover',
-    summary: 'The window centered on a panel, as it sits on a gallery card.',
-    config: WindowConfig(frame: WindowFrame.cover),
-  ),
-];
-
-/// A playground for [LowframerWindow] and [LowframerCover], the two frames.
+/// The two frames, shown together.
 ///
-/// Neither takes styling arguments — they are fixed by design, so that every
-/// composition carries the same optical weight. The knobs therefore vary what
-/// is framed rather than the frame, which is what there is to see.
-class WindowPage extends StatefulWidget {
-  /// Creates the window playground.
+/// A reference page, not a playground. Neither widget takes a styling
+/// argument — [LowframerWindow] is a fixed 160x120 canvas and [LowframerCover]
+/// takes nothing but a child — so there is no configuration to step through.
+/// What is worth seeing is the *relationship*: the cover is a full-width panel
+/// that centres a window on it, which a toggle between the two would hide
+/// rather than show.
+///
+/// When the window grows an orientation (see lowframer#18), that becomes a
+/// real axis and this page earns presets.
+class WindowPage extends StatelessWidget {
+  /// Creates the window and cover reference.
   const WindowPage({super.key});
 
   @override
-  State<WindowPage> createState() => _WindowPageState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Window & cover'),
+        actions: const [AppSettingsActions()],
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: const _Frames(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _WindowPageState extends State<WindowPage> {
-  WindowConfig _config = const WindowConfig();
-
-  Widget _art(WindowSubject subject) => switch (subject) {
-    WindowSubject.buttons => const ButtonsArt(),
-    WindowSubject.dashboard => const DashboardArt(),
-    WindowSubject.chatThread => const ChatThreadArt(),
-    WindowSubject.settingsList => const SettingsListArt(),
-  };
+class _Frames extends StatelessWidget {
+  const _Frames();
 
   @override
   Widget build(BuildContext context) {
-    return PlaygroundPage<WindowConfig>(
-      title: 'Window & cover',
-      config: _config,
-      onChanged: (c) => setState(() => _config = c),
-      presets: _presets,
-      // The cover spans its parent, so the stage is clamped to roughly a
-      // card's width; left unbounded it would stretch across the pane and
-      // stop reading as the panel it is.
-      previewMaxWidth: 320,
-      previewBuilder: (context, config) {
-        final art = _art(config.subject);
-        return switch (config.frame) {
-          WindowFrame.window => art,
-          WindowFrame.cover => LowframerCover(child: art),
-        };
-      },
-      knobsBuilder: (context, config, onChanged) => Column(
+    final theme = Theme.of(context);
+
+    Widget labelled({
+      required String name,
+      required String note,
+      required Widget child,
+    }) => Expanded(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 16,
+        spacing: 10,
         children: [
-          DropdownKnob<WindowFrame>(
-            label: 'Frame',
-            value: config.frame,
-            values: WindowFrame.values,
-            labelOf: (f) => f.name,
-            onChanged: (v) => onChanged(config.copyWith(frame: v)),
+          Text(name, style: theme.textTheme.titleSmall),
+          Text(
+            note,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
-          DropdownKnob<WindowSubject>(
-            label: 'Art',
-            value: config.subject,
-            values: WindowSubject.values,
-            labelOf: (s) => s.name,
-            onChanged: (v) => onChanged(config.copyWith(subject: v)),
-          ),
+          const SizedBox(height: 4),
+          child,
         ],
       ),
+    );
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 24,
+      children: [
+        labelled(
+          name: 'Window',
+          note:
+              'A fixed 160×120 canvas. Every composition draws inside one, '
+              'so each carries the same optical weight.',
+          // Aligned left rather than stretched: the window does not grow, and
+          // centring it here would hide that.
+          child: const Align(
+            alignment: Alignment.centerLeft,
+            child: DashboardArt(),
+          ),
+        ),
+        labelled(
+          name: 'Cover',
+          note:
+              'A full-width panel with a window centred on it, as it sits '
+              'on a gallery card.',
+          child: const LowframerCover(child: DashboardArt()),
+        ),
+      ],
     );
   }
 }
