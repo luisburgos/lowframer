@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lowframer_showcase/catalogue.dart';
 import 'package:lowframer_showcase/components/seed_color_button.dart';
-import 'package:lowframer_showcase/pages/palette_gallery_page.dart';
 import 'package:showcaser/showcaser.dart';
 
 void main() => runApp(const ExampleApp());
@@ -59,12 +58,6 @@ class _ExampleAppState extends State<ExampleApp> {
         ),
       ),
       themeMode: _mode,
-      // The scope sits above the navigator so a pushed example route resolves
-      // the same app-level state the index does.
-      builder: (context, child) => ExampleRouteScope(
-        paletteGallery: (context) => const PaletteGalleryPage(),
-        child: child!,
-      ),
       home: HomePage(
         seed: _seed,
         onSeedChanged: (color) => setState(() => _seed = color),
