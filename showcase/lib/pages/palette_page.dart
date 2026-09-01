@@ -1,167 +1,138 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:lowframer/lowframer.dart';
-import 'package:lowframer_showcase/arts/arts.dart';
-import 'package:lowframer_showcase/components/playground_page.dart';
-import 'package:playgrounder/playgrounder.dart';
 
-/// The state of the palette preview.
-class PaletteConfig extends Equatable {
-  /// Creates a palette configuration.
-  const PaletteConfig({this.showRoles = true, this.dimmed = false});
-
-  /// Whether the six roles are listed as labelled swatches.
-  final bool showRoles;
-
-  /// Whether the accent is muted down to the quiet fill.
-  ///
-  /// The kit's one rule about accent is that it is used sparingly; this shows
-  /// what a composition looks like with it withheld entirely.
-  final bool dimmed;
-
-  /// A copy with the given fields replaced.
-  PaletteConfig copyWith({bool? showRoles, bool? dimmed}) => PaletteConfig(
-    showRoles: showRoles ?? this.showRoles,
-    dimmed: dimmed ?? this.dimmed,
-  );
-
-  @override
-  List<Object?> get props => [showRoles, dimmed];
-}
-
-const _presets = <PlaygroundPreset<PaletteConfig>>[
-  PlaygroundPreset(
-    label: 'Roles',
-    summary: 'The six roles a composition paints with, named.',
-    config: PaletteConfig(),
-  ),
-  PlaygroundPreset(
-    label: 'In use',
-    summary: 'The same palette as a finished composition reads it.',
-    config: PaletteConfig(showRoles: false),
-  ),
-];
-
-/// A playground for [LowframerPalette], the six roles art is painted with.
+/// The six roles a composition paints with.
 ///
-/// The palette is derived from the ambient `ColorScheme`, so the seed picker
-/// and the light/dark toggle on the index change what is shown here — which
-/// is the point: the art follows the app's theme with no extra code.
-class PalettePage extends StatefulWidget {
-  /// Creates the palette playground.
+/// A reference page, not a playground. [LowframerPalette] is a data class with
+/// no axis to vary: there is no configuration of it to step through, so
+/// presets and knobs would be invented rather than earned. What the roles are
+/// *for* is the thing worth writing down, and this is the only place it is.
+///
+/// Where a palette comes from — derived from the theme, overridden, or built
+/// by hand — is the Theming example's subject, not this page's.
+class PalettePage extends StatelessWidget {
+  /// Creates the palette reference.
   const PalettePage({super.key});
 
   @override
-  State<PalettePage> createState() => _PalettePageState();
-}
-
-class _PalettePageState extends State<PalettePage> {
-  PaletteConfig _config = const PaletteConfig();
-
-  @override
   Widget build(BuildContext context) {
-    return PlaygroundPage<PaletteConfig>(
-      title: 'Palette',
-      config: _config,
-      onChanged: (c) => setState(() => _config = c),
-      presets: _presets,
-      previewMaxWidth: 360,
-      previewBuilder: (context, config) {
-        final base = LowframerPalette.of(context);
-        final palette = config.dimmed
-            ? base.copyWith(accent: base.fillStrong)
-            : base;
-
-        if (!config.showRoles) {
-          return LowframerTheme(
-            palette: palette,
-            child: const LowframerCover(child: DashboardArt()),
-          );
-        }
-
-        return LowframerTheme(
-          palette: palette,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final (name, color, note) in <(String, Color, String)>[
-                ('backdrop', palette.backdrop, 'The cover panel wash'),
-                ('background', palette.background, "The window's canvas"),
-                ('border', palette.border, "The window's hairline frame"),
-                ('fill', palette.fill, 'The quiet placeholder'),
-                ('fillStrong', palette.fillStrong, 'Reads above fill'),
-                ('accent', palette.accent, 'Emphasis, used sparingly'),
-              ])
-                _RoleRow(name: name, color: color, note: note),
-            ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Palette'),
+        centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context).colorScheme.outlineVariant,
           ),
-        );
-      },
-      knobsBuilder: (context, config, onChanged) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 16,
-        children: [
-          SwitchKnob(
-            label: 'Show roles',
-            value: config.showRoles,
-            onChanged: (v) => onChanged(config.copyWith(showRoles: v)),
+        ),
+      ),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: const _Roles(),
+            ),
           ),
-          SwitchKnob(
-            label: 'Mute the accent',
-            value: config.dimmed,
-            onChanged: (v) => onChanged(config.copyWith(dimmed: v)),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
-/// One palette role: a swatch, its name, and what it is for.
-class _RoleRow extends StatelessWidget {
-  const _RoleRow({
-    required this.name,
-    required this.color,
-    required this.note,
-  });
-
-  final String name;
-  final Color color;
-  final String note;
+class _Roles extends StatelessWidget {
+  const _Roles();
 
   @override
   Widget build(BuildContext context) {
+    final palette = LowframerPalette.of(context);
     final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        spacing: 12,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: theme.colorScheme.outlineVariant),
-            ),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: theme.textTheme.titleSmall),
-                Text(
-                  note,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+
+    // Each role is shown as the primitive that actually uses it, rather than
+    // as a bare colour chip: a page documenting the kit should be drawn with
+    // the kit.
+    final roles = <(String, String, Widget)>[
+      (
+        'backdrop',
+        'The cover panel wash, one quiet step off the surface it sits on',
+        LowframerBox(color: palette.backdrop, height: 28, radius: 6),
       ),
+      (
+        'background',
+        "The window's canvas",
+        LowframerBox(
+          color: palette.background,
+          borderColor: palette.border,
+          height: 28,
+          radius: 6,
+        ),
+      ),
+      (
+        'border',
+        "The window's hairline frame",
+        LowframerBox(
+          color: palette.background,
+          borderColor: palette.border,
+          height: 28,
+          radius: 6,
+        ),
+      ),
+      (
+        'fill',
+        'The quiet placeholder, for everything that is not being emphasised',
+        LowframerBox(color: palette.fill, height: 28, radius: 6),
+      ),
+      (
+        'fillStrong',
+        'A stronger fill, for elements that must read above fill',
+        LowframerBox(color: palette.fillStrong, height: 28, radius: 6),
+      ),
+      (
+        'accent',
+        'The single emphasis colour, used sparingly',
+        LowframerBox(color: palette.accent, height: 28, radius: 6),
+      ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: 20,
+      children: [
+        for (final (name, note, swatch) in roles)
+          Row(
+            spacing: 16,
+            children: [
+              SizedBox(width: 120, child: swatch),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name, style: theme.textTheme.titleSmall),
+                    Text(
+                      note,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        const SizedBox(height: 8),
+        Text(
+          'Every role is derived from the ambient ColorScheme unless a '
+          'LowframerTheme overrides it. See the Theming example for where a '
+          'palette comes from.',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
     );
   }
 }
