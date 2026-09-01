@@ -2,6 +2,7 @@ include: package:very_good_analysis/analysis_options.yaml
 
 analyzer:
   exclude:
-    # The example app has its own analysis_options.yaml and is analyzed as its
-    # own package by CI's example job.
+    # Both sub-packages have their own analysis_options.yaml and are analyzed
+    # as their own packages by CI's sub_packages job.
     - "example/**"
+    - "showcase/**"

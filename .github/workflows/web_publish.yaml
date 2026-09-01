@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: example
+        working-directory: showcase
     steps:
       - uses: actions/checkout@v7
 
@@ -73,7 +73,7 @@ jobs:
 
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: example/build/web
+          path: showcase/build/web
 
   deploy:
     needs: build

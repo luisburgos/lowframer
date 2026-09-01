@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lowframer/lowframer.dart';
-import 'package:lowframer_example/arts/arts.dart';
-import 'package:lowframer_example/main.dart';
+import 'package:lowframer_showcase/arts/arts.dart';
+import 'package:lowframer_showcase/main.dart';
 import 'package:playgrounder/playgrounder.dart';
 import 'package:showcaser/showcaser.dart';
 

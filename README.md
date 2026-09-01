@@ -12,7 +12,7 @@ construction.**
 
 ### 🔎 [**Try the live demo →**](https://luisburgos.github.io/lowframer/)
 
-The example gallery, running in your browser. No install required.
+The showcase, running in your browser: every primitive as a playground, and the compositions built from them. No install required.
 
 ## Features ✨
 
@@ -116,10 +116,20 @@ To tweak rather than replace, start from the derived palette and `copyWith`:
 final palette = LowframerPalette.of(context).copyWith(accent: Colors.teal);
 ```
 
-See the gallery running at
-**<https://luisburgos.github.io/lowframer/>**, or run [`example/`](example)
-locally:
+Two apps live in this repository, and they answer different questions.
+
+[`example/`](example) is the smallest app that draws lowframer art — one
+screen, the four primitives, ~120 lines. Start there to see what a composition
+is made of:
 
 ```sh
 cd example && fvm flutter run
+```
+
+[`showcase/`](showcase) is the full thing: a playground per primitive, where
+you turn its knobs and watch the art redraw, plus the compositions built from
+them. It is what the live demo serves:
+
+```sh
+cd showcase && fvm flutter run
 ```

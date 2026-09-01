@@ -49,6 +49,8 @@ coverage
 # Example app build output
 example/build/
 example/.dart_tool/
+showcase/build/
+showcase/.dart_tool/
 
 # Showcase experiment build output
 showcase/build/

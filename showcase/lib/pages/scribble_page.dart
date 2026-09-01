@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:lowframer/lowframer.dart';
-import 'package:lowframer_example/components/playground_page.dart';
-import 'package:lowframer_example/components/scale_lookup.dart';
+import 'package:lowframer_showcase/components/playground_page.dart';
+import 'package:lowframer_showcase/components/scale_lookup.dart';
 import 'package:playgrounder/playgrounder.dart';
 
 /// The state of the [LowframerScribble] preview.

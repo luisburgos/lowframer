@@ -12,10 +12,11 @@
 # pub cache.
 test/
 
-# The example's web scaffolding exists only to deploy the example to GitHub
-# Pages. pub.dev renders example/lib on the Example tab; the web/ entry point
-# is dead weight in a consumer's pub cache.
-example/web/
+# The showcase: a full two-tab app with a playground per primitive, deployed
+# to GitHub Pages. pub.dev renders example/lib on its Example tab, and the
+# example is the thin one — the showcase is dead weight in a consumer's pub
+# cache and would swamp the archive.
+showcase/
 
 # Repository and CI configuration, not consumer-facing.
 .github/
