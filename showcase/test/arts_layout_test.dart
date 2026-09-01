@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lowframer/lowframer.dart';
 import 'package:lowframer_showcase/arts/arts.dart';
+import 'package:lowframer_showcase/arts/example_covers.dart';
 
 void main() {
   // The arts were written against the desktop frame's 140px content box, and
@@ -37,6 +38,33 @@ void main() {
           reason: '${art.key} threw at ${size.key}',
         );
       }
+    }
+  });
+
+  testWidgets('every example cover lays out', (tester) async {
+    const covers = <String, Widget>{
+      'Theming': ThemingCoverArt(),
+      'ScreenSketch': ScreenSketchCoverArt(),
+      'Skeleton': SkeletonCoverArt(),
+    };
+
+    for (final cover in covers.entries) {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Center(
+            // As the gallery draws them: a cover panel inside a tile.
+            child: SizedBox(
+              width: 240,
+              child: LowframerCover(child: cover.value),
+            ),
+          ),
+        ),
+      );
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: '${cover.key} cover threw',
+      );
     }
   });
 }

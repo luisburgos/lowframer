@@ -1,5 +1,6 @@
 import 'package:lowframer/lowframer.dart';
 import 'package:lowframer_showcase/arts/arts.dart';
+import 'package:lowframer_showcase/arts/example_covers.dart';
 import 'package:lowframer_showcase/pages/box_page.dart';
 import 'package:lowframer_showcase/pages/palette_page.dart';
 import 'package:lowframer_showcase/pages/screen_page.dart';
@@ -49,19 +50,19 @@ final exampleEntries = <ShowcaseEntry>[
   ShowcaseEntry(
     title: 'Theming',
     subtitle: 'Derived from the app theme, or held against it',
-    coverArt: (_) => const LowframerCover(child: ProfileFormArt()),
+    coverArt: (_) => const LowframerCover(child: ThemingCoverArt()),
     builder: (_) => const ThemingPage(),
   ),
   ShowcaseEntry(
     title: 'Screen sketch',
     subtitle: 'A whole screen, at the size it would really render',
-    coverArt: (_) => const LowframerCover(child: DashboardArt()),
+    coverArt: (_) => const LowframerCover(child: ScreenSketchCoverArt()),
     builder: (_) => const ScreenPage(),
   ),
   ShowcaseEntry(
     title: 'Loading skeleton',
     subtitle: 'The same primitives, shipping in a real loading state',
-    coverArt: (_) => const LowframerCover(child: SettingsListArt()),
+    coverArt: (_) => const LowframerCover(child: SkeletonCoverArt()),
     builder: (_) => const SkeletonPage(),
   ),
 ];
