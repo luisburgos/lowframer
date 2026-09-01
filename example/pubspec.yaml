@@ -14,12 +14,13 @@ dependencies:
   lowframer:
     path: ../
   playgrounder: ^0.2.0
-  # The gallery shell the example's art grid is laid out by. A git dependency
-  # while showcaser is unpublished; swaps to the pub version at its release.
+  # The gallery shell the example's art grid is laid out by. Pinned to a tag
+  # rather than a branch: `ref: main` is a moving target that a `pub upgrade`
+  # would follow. Swaps to the pub version once showcaser is published.
   showcaser:
     git:
       url: https://github.com/luisburgos/showcaser
-      ref: main
+      ref: "0.1.0"
 
 dev_dependencies:
   flutter_test:
