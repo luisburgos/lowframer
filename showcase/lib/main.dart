@@ -124,6 +124,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Scaffold(
       appBar: AppBar(
         title: const Text('lowframer'),
+        // Pinned rather than left to the platform default, which centers on
+        // iOS and left-aligns elsewhere — so the title moved depending on the
+        // viewport Flutter web inferred a platform from.
+        centerTitle: true,
         bottom: TabBar(
           controller: _tabs,
           tabs: const [
