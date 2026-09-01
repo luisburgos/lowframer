@@ -1,147 +1,116 @@
 import 'package:flutter/material.dart';
-import 'package:lowframer_example/catalogue.dart';
-import 'package:lowframer_example/pages/palette_gallery_page.dart';
-import 'package:showcaser/showcaser.dart';
+import 'package:lowframer/lowframer.dart';
 
 void main() => runApp(const ExampleApp());
 
-/// Common seed colors for Flutter apps; the first is Material's default.
-const seedColors = <Color>[
-  Colors.deepPurple,
-  Colors.indigo,
-  Colors.blue,
-  Colors.cyan,
-  Colors.teal,
-  Colors.green,
-  Colors.lime,
-  Colors.amber,
-  Colors.orange,
-  Colors.red,
-  Colors.pink,
-  Colors.brown,
-];
-
-class ExampleApp extends StatefulWidget {
+/// The smallest app that draws lowframer art.
+///
+/// One screen showing the four primitives the kit ships. Deliberately plain:
+/// the point is what a composition is made of, not what can be built from it.
+/// For that, see the showcase — every primitive as a playground, and the
+/// compositions built from them.
+class ExampleApp extends StatelessWidget {
+  /// {@macro example_app}
   const ExampleApp({super.key});
-
-  @override
-  State<ExampleApp> createState() => _ExampleAppState();
-}
-
-class _ExampleAppState extends State<ExampleApp> {
-  ThemeMode _mode = ThemeMode.system;
-  Color _seed = seedColors.first;
-
-  void _toggleMode(BuildContext context) {
-    setState(() {
-      // Resolve "system" to what is currently showing, then flip it.
-      final brightness = MediaQuery.platformBrightnessOf(context);
-      final isDark = switch (_mode) {
-        ThemeMode.system => brightness == Brightness.dark,
-        ThemeMode.dark => true,
-        ThemeMode.light => false,
-      };
-      _mode = isDark ? ThemeMode.light : ThemeMode.dark;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'lowframer',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: _seed)),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+      ),
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: _seed,
+          seedColor: Colors.indigo,
           brightness: Brightness.dark,
         ),
       ),
-      themeMode: _mode,
-      // The scope sits above the navigator so a pushed example route resolves
-      // the same app-level state the index does.
-      builder: (context, child) => ExampleRouteScope(
-        paletteGallery: (context) => PaletteGalleryPage(
-          seed: _seed,
-          onSeedChanged: (color) => setState(() => _seed = color),
-          onToggleTheme: () => _toggleMode(context),
-        ),
-        child: child!,
-      ),
-      home: HomePage(onToggleTheme: () => _toggleMode(context)),
+      home: const _HomePage(),
     );
   }
 }
 
-/// The widest the tab content may lay out.
-///
-/// Beyond this an ultrawide window only stretches the tiles, and a stretched
-/// tile distorts its fixed-height cover art. The app bar stays full-width — it
-/// is the content that caps, not the chrome.
-const double _kContentMaxWidth = 1200;
-
-/// The example index: the kit's primitives and the compositions built from
-/// them, split across two tabs.
-///
-/// The split is the organising principle made visible. A primitive answers
-/// "what can I draw with", a composition answers "what does it add up to", and
-/// a reader is usually after one or the other.
-class HomePage extends StatefulWidget {
-  const HomePage({required this.onToggleTheme, super.key});
-
-  final VoidCallback onToggleTheme;
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  late final TabController _tabs = TabController(length: 2, vsync: this);
-
-  @override
-  void dispose() {
-    _tabs.dispose();
-    super.dispose();
-  }
+class _HomePage extends StatelessWidget {
+  const _HomePage();
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Resolved from the ambient ColorScheme, so the art follows the app's
+    // theme — dark mode included — with no extra code.
+    final palette = LowframerPalette.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('lowframer'),
-        bottom: TabBar(
-          controller: _tabs,
-          tabs: const [
-            Tab(text: 'Library'),
-            Tab(text: 'Examples'),
-          ],
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: IconButton(
-              tooltip: isDark ? 'Switch to light mode' : 'Switch to dark mode',
-              icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-              onPressed: widget.onToggleTheme,
-            ),
-          ),
-        ],
-      ),
-      // Centered under a max width so an ultrawide window widens the margins
-      // instead of the cards.
+      appBar: AppBar(title: const Text('lowframer')),
       body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: _kContentMaxWidth),
-          child: TabBarView(
-            controller: _tabs,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              ShowcaseEntryList(entries: libraryEntries),
-              ShowcaseEntryList(entries: exampleEntries),
+              // The framed canvas every composition is drawn inside.
+              LowframerWindow(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 8,
+                  children: [
+                    // A box at stadium radius: the button silhouette.
+                    LowframerBox.pill(color: palette.accent, width: 72),
+                    // A text-placeholder line.
+                    LowframerBox.line(color: palette.fillStrong, width: 96),
+                    // Written text, as one continuous pen stroke.
+                    LowframerScribble(color: palette.fill, width: 104),
+                    // An outlined box: an empty field.
+                    LowframerBox(
+                      color: palette.background,
+                      borderColor: palette.fillStrong,
+                      height: 14,
+                      radius: 4,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              // The same window, centered on a cover panel, as it sits on a
+              // gallery card.
+              const SizedBox(
+                width: 240,
+                child: LowframerCover(child: _MiniArt()),
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// A second composition, to show the cover panel framing one.
+class _MiniArt extends StatelessWidget {
+  const _MiniArt();
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = LowframerPalette.of(context);
+    return LowframerWindow(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.center,
+        spacing: 10,
+        children: [
+          LowframerBox.line(color: palette.fillStrong, width: 40),
+          Row(
+            spacing: 6,
+            children: [
+              LowframerBox.pill(color: palette.fill, width: 12),
+              LowframerBox.line(color: palette.fill, width: 52),
+              const Spacer(),
+              LowframerBox.pill(color: palette.accent, width: 20, height: 10),
+            ],
+          ),
+        ],
       ),
     );
   }

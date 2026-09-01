@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lowframer/lowframer.dart';
-import 'package:lowframer_example/arts/arts.dart';
-import 'package:lowframer_example/pages/box_page.dart';
-import 'package:lowframer_example/pages/palette_page.dart';
-import 'package:lowframer_example/pages/scribble_page.dart';
-import 'package:lowframer_example/pages/window_page.dart';
+import 'package:lowframer_showcase/arts/arts.dart';
+import 'package:lowframer_showcase/pages/box_page.dart';
+import 'package:lowframer_showcase/pages/palette_page.dart';
+import 'package:lowframer_showcase/pages/scribble_page.dart';
+import 'package:lowframer_showcase/pages/window_page.dart';
 import 'package:showcaser/showcaser.dart';
 
 /// The kit's primitives — one entry per thing you can construct.

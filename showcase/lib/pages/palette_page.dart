@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:lowframer/lowframer.dart';
-import 'package:lowframer_example/arts/arts.dart';
-import 'package:lowframer_example/components/playground_page.dart';
+import 'package:lowframer_showcase/arts/arts.dart';
+import 'package:lowframer_showcase/components/playground_page.dart';
 import 'package:playgrounder/playgrounder.dart';
 
 /// The state of the palette preview.

@@ -53,12 +53,18 @@ jobs:
   # The example is a separate package, excluded from the root analysis
   # options, so the job above never sees it. Without this it breaks silently
   # whenever the library's API changes.
-  example:
+  # Both are separate packages, excluded from the root analysis options, so
+  # the build job never sees them. Without this they break silently whenever
+  # the library's API changes.
+  sub_packages:
     needs: flutter_version
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [example, showcase]
     defaults:
       run:
-        working-directory: example
+        working-directory: ${{ matrix.package }}
     steps:
       - uses: actions/checkout@v7
 

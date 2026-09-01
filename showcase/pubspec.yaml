@@ -1,5 +1,5 @@
-name: lowframer_example
-description: The smallest app that draws lowframer art.
+name: lowframer_showcase
+description: "The lowframer showcase: every primitive as a playground, and the compositions built from them."
 publish_to: none
 version: 0.1.0
 
@@ -8,10 +8,14 @@ environment:
   flutter: ">=3.41.0"
 
 dependencies:
+  equatable: ^2.0.7
   flutter:
     sdk: flutter
   lowframer:
     path: ../
+  playgrounder: ^0.3.1
+  # The gallery shell the example's art grid is laid out by.
+  showcaser: ^0.1.0
 
 dev_dependencies:
   flutter_test:
