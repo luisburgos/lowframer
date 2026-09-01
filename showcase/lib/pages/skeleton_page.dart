@@ -7,10 +7,10 @@ import 'package:playgrounder/playgrounder.dart';
 /// Which skeleton is being drawn.
 ///
 /// The presets vary this: each is a different placeholder built from the same
-/// primitives, which is the thing being demonstrated. Whether the real content
-/// is shown beside it is a knob, not a preset — that content is plain Material
-/// and has no lowframer in it, so it is a point of comparison rather than a
-/// configuration of the kit.
+/// primitives, which is the thing being demonstrated. The shimmer and the
+/// loaded comparison are deliberately NOT part of this configuration — they
+/// are view options, so a preset must not reset them and toggling one must not
+/// report Custom.
 enum SkeletonShape {
   /// Avatar, title, and a line of body: a list of people or posts.
   list,
@@ -28,12 +28,7 @@ enum SkeletonShape {
 /// The state of the skeleton preview.
 class SkeletonConfig extends Equatable {
   /// Creates a skeleton configuration.
-  const SkeletonConfig({
-    this.shape = SkeletonShape.list,
-    this.rows = 3,
-    this.shimmer = true,
-    this.showLoaded = true,
-  });
+  const SkeletonConfig({this.shape = SkeletonShape.list, this.rows = 3});
 
   /// Which skeleton is drawn.
   final SkeletonShape shape;
@@ -41,27 +36,12 @@ class SkeletonConfig extends Equatable {
   /// How many rows are placed.
   final int rows;
 
-  /// Whether the placeholders pulse.
-  final bool shimmer;
-
-  /// Whether the real content is shown beside the placeholder.
-  final bool showLoaded;
-
   /// A copy with the given fields replaced.
-  SkeletonConfig copyWith({
-    SkeletonShape? shape,
-    int? rows,
-    bool? shimmer,
-    bool? showLoaded,
-  }) => SkeletonConfig(
-    shape: shape ?? this.shape,
-    rows: rows ?? this.rows,
-    shimmer: shimmer ?? this.shimmer,
-    showLoaded: showLoaded ?? this.showLoaded,
-  );
+  SkeletonConfig copyWith({SkeletonShape? shape, int? rows}) =>
+      SkeletonConfig(shape: shape ?? this.shape, rows: rows ?? this.rows);
 
   @override
-  List<Object?> get props => [shape, rows, shimmer, showLoaded];
+  List<Object?> get props => [shape, rows];
 }
 
 /// One preset per skeleton, because the skeleton is what varies.
@@ -105,6 +85,10 @@ class SkeletonPage extends StatefulWidget {
 class _SkeletonPageState extends State<SkeletonPage> {
   SkeletonConfig _config = const SkeletonConfig();
 
+  // View options, held beside the configuration rather than in it.
+  bool _shimmer = true;
+  bool _showLoaded = true;
+
   @override
   Widget build(BuildContext context) {
     return PlaygroundPage<SkeletonConfig>(
@@ -113,7 +97,29 @@ class _SkeletonPageState extends State<SkeletonPage> {
       onChanged: (c) => setState(() => _config = c),
       presets: _presets,
       previewMaxWidth: 460,
-      previewBuilder: (context, config) => _Skeleton(config: config),
+      // Both are view options rather than part of the configuration a preset
+      // describes, so they sit in the pinned footer and stay put while you
+      // page through the skeletons.
+      footer: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SwitchKnob(
+            label: 'Shimmer',
+            value: _shimmer,
+            onChanged: (v) => setState(() => _shimmer = v),
+          ),
+          SwitchKnob(
+            label: 'Show loaded',
+            value: _showLoaded,
+            onChanged: (v) => setState(() => _showLoaded = v),
+          ),
+        ],
+      ),
+      previewBuilder: (context, config) => _Skeleton(
+        config: config,
+        shimmer: _shimmer,
+        showLoaded: _showLoaded,
+      ),
       knobsBuilder: (context, config, onChanged) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 16,
@@ -132,19 +138,6 @@ class _SkeletonPageState extends State<SkeletonPage> {
             labelOf: (r) => '$r',
             onChanged: (v) => onChanged(config.copyWith(rows: v)),
           ),
-          SwitchKnob(
-            label: 'Shimmer',
-            value: config.shimmer,
-            onChanged: (v) => onChanged(config.copyWith(shimmer: v)),
-          ),
-          SwitchKnob(
-            // Not a preset: the loaded panel is plain Material with no
-            // lowframer in it, so it is a point of comparison rather than a
-            // configuration of the kit.
-            label: 'Show what it stands in for',
-            value: config.showLoaded,
-            onChanged: (v) => onChanged(config.copyWith(showLoaded: v)),
-          ),
         ],
       ),
     );
@@ -152,9 +145,15 @@ class _SkeletonPageState extends State<SkeletonPage> {
 }
 
 class _Skeleton extends StatelessWidget {
-  const _Skeleton({required this.config});
+  const _Skeleton({
+    required this.config,
+    required this.shimmer,
+    required this.showLoaded,
+  });
 
   final SkeletonConfig config;
+  final bool shimmer;
+  final bool showLoaded;
 
   @override
   Widget build(BuildContext context) {
@@ -186,9 +185,9 @@ class _Skeleton extends StatelessWidget {
       ),
     );
 
-    final placeholder = _Placeholder(config: config);
+    final placeholder = _Placeholder(config: config, shimmer: shimmer);
 
-    if (!config.showLoaded) {
+    if (!showLoaded) {
       return Row(
         children: [panel(label: 'Loading', child: placeholder)],
       );
@@ -210,9 +209,10 @@ class _Skeleton extends StatelessWidget {
 
 /// The skeleton itself, drawn entirely from lowframer primitives.
 class _Placeholder extends StatelessWidget {
-  const _Placeholder({required this.config});
+  const _Placeholder({required this.config, required this.shimmer});
 
   final SkeletonConfig config;
+  final bool shimmer;
 
   @override
   Widget build(BuildContext context) {
@@ -284,7 +284,7 @@ class _Placeholder extends StatelessWidget {
       children: [for (var i = 0; i < config.rows; i++) row(i)],
     );
 
-    if (!config.shimmer) return rows;
+    if (!shimmer) return rows;
     return _Pulse(child: rows);
   }
 }

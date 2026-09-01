@@ -18,6 +18,7 @@ class PlaygroundPage<T> extends StatelessWidget {
     required this.knobsBuilder,
     this.presets = const [],
     this.previewMaxWidth,
+    this.footer,
     super.key,
   });
 
@@ -47,6 +48,12 @@ class PlaygroundPage<T> extends StatelessWidget {
   /// Clamps the previewed subject's width to what it really renders at.
   final double? previewMaxWidth;
 
+  /// Content pinned to the bottom of the inspector, across both tabs.
+  ///
+  /// For controls that are not part of the configuration a preset describes —
+  /// view options that should stay put while you page through presets.
+  final Widget? footer;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,6 +76,7 @@ class PlaygroundPage<T> extends StatelessWidget {
           onChanged: onChanged,
           presets: presets,
           previewMaxWidth: previewMaxWidth,
+          footer: footer,
           previewBuilder: previewBuilder,
           knobsBuilder: knobsBuilder,
         ),
