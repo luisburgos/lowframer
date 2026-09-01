@@ -1,8 +1,11 @@
 import 'package:lowframer/lowframer.dart';
 import 'package:lowframer_showcase/arts/arts.dart';
 import 'package:lowframer_showcase/pages/box_page.dart';
+import 'package:lowframer_showcase/pages/determinism_page.dart';
 import 'package:lowframer_showcase/pages/palette_page.dart';
+import 'package:lowframer_showcase/pages/screen_page.dart';
 import 'package:lowframer_showcase/pages/scribble_page.dart';
+import 'package:lowframer_showcase/pages/skeleton_page.dart';
 import 'package:lowframer_showcase/pages/theming_page.dart';
 import 'package:lowframer_showcase/pages/window_page.dart';
 import 'package:showcaser/showcaser.dart';
@@ -44,6 +47,24 @@ final libraryEntries = <ShowcaseEntry>[
 /// primitives combine into something recognisable, or how a palette change
 /// carries across a whole set at once.
 final exampleEntries = <ShowcaseEntry>[
+  ShowcaseEntry(
+    title: 'Screen sketch',
+    subtitle: 'A whole screen, at the size it would really render',
+    coverArt: (_) => const LowframerCover(child: DashboardArt()),
+    builder: (_) => const ScreenPage(),
+  ),
+  ShowcaseEntry(
+    title: 'Loading skeleton',
+    subtitle: 'The same primitives, shipping in a real loading state',
+    coverArt: (_) => const LowframerCover(child: SettingsListArt()),
+    builder: (_) => const SkeletonPage(),
+  ),
+  ShowcaseEntry(
+    title: 'Determinism',
+    subtitle: 'The same seed always paints the same stroke',
+    coverArt: (_) => const LowframerCover(child: TypographyArt()),
+    builder: (_) => const DeterminismPage(),
+  ),
   ShowcaseEntry(
     title: 'Theming',
     subtitle: 'Derived from the app theme, or held against it',
