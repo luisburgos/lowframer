@@ -201,13 +201,17 @@ class ProfileFormArt extends StatelessWidget {
                 width: 18,
                 height: 18,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 3,
-                children: [
-                  _Line(color: palette.fillStrong, fraction: 0.5),
-                  _Line(color: palette.fill, fraction: 0.34),
-                ],
+              // Expanded: the Column inherits the Row's unbounded width, so
+              // a fraction inside it has nothing to be a fraction of.
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 3,
+                  children: [
+                    _Line(color: palette.fillStrong, fraction: 0.7),
+                    _Line(color: palette.fill, fraction: 0.48),
+                  ],
+                ),
               ),
             ],
           ),
