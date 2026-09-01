@@ -138,9 +138,11 @@ class _Preview extends StatelessWidget {
     // One subject, not two labelled columns: the cover is the window with a
     // panel around it, so showing them as peers made a composition read as a
     // comparison. The switch adds the panel to what is already there.
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: showCover ? LowframerCover(windowSize: size, child: art) : art,
-    );
+    //
+    // No Align: the stage centres its child already. Pinning left was a
+    // leftover from the two-column layout, where it showed the window does not
+    // stretch — here it only made the bare window sit off to one side while
+    // the full-width cover looked centred.
+    return showCover ? LowframerCover(windowSize: size, child: art) : art;
   }
 }
