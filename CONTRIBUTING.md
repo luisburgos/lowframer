@@ -114,6 +114,17 @@ branch reaches the remote and no CI run is spent saying so. To check by hand:
 tool/check_version_bump_is_alone.sh
 ```
 
+The guard has its own tests, run by both the hook and CI. Run them after
+changing it:
+
+```sh
+tool/check_version_bump_is_alone_test.sh
+```
+
+It compares the *parsed* version on either side rather than pattern-matching
+the diff, so how `pubspec.yaml` or `package.json` happens to be formatted
+cannot decide whether a bump is noticed.
+
 If it fails, the fix is never to widen the allowlist. Drop the bump from the
 branch, land the feature, then open the release PR.
 

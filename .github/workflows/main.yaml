@@ -99,5 +99,10 @@ jobs:
           # The three-dot diff needs the merge base, not a shallow tip.
           fetch-depth: 0
 
+      # The guard has its own tests, since a check nobody exercises is a
+      # check nobody can safely change.
+      - name: Test the guard
+        run: tool/check_version_bump_is_alone_test.sh
+
       - name: A version bump must be its own PR
         run: tool/check_version_bump_is_alone.sh "origin/${{ github.base_ref }}"
