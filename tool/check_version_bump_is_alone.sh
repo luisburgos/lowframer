@@ -28,11 +28,35 @@ if ! git rev-parse --verify --quiet "$base" >/dev/null; then
   exit 2
 fi
 
+# Read the declared version out of a ref rather than pattern-matching the
+# diff. Matching diff text asks "does a line starting +version: exist?", which
+# is a question about formatting: a package.json indented with four spaces, or
+# minified onto one line, carries a real bump the pattern never sees, and
+# reordering the keys without touching the version makes it fire on a PR that
+# bumps nothing. Comparing the values asks the actual question.
+#
+# A missing file yields an empty string, so a repo without a package.json
+# compares "" against "" and simply contributes nothing.
+pubspec_version_at() {
+  git show "$1:pubspec.yaml" 2>/dev/null |
+    sed -n 's/^version:[[:space:]]*\([^[:space:]#]*\).*/\1/p' | head -1
+}
+
+package_json_version_at() {
+  git show "$1:package.json" 2>/dev/null | python3 -c '
+import json, sys
+try:
+    print(json.load(sys.stdin).get("version", ""))
+except Exception:
+    print("")
+' 2>/dev/null
+}
+
 version_touched=false
-if git diff "$base"...HEAD -- pubspec.yaml | grep -qE '^\+version:'; then
+if [ "$(pubspec_version_at "$base")" != "$(pubspec_version_at HEAD)" ]; then
   version_touched=true
 fi
-if git diff "$base"...HEAD -- package.json | grep -qE '^\+  "version"'; then
+if [ "$(package_json_version_at "$base")" != "$(package_json_version_at HEAD)" ]; then
   version_touched=true
 fi
 

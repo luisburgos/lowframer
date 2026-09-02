@@ -47,7 +47,7 @@ pre-push:
       # falls back to whatever origin/main is on disk rather than blocking the
       # push (CI remains the authoritative gate).
       priority: 5
-      run: 'git fetch --quiet origin main 2>/dev/null || true; tool/check_version_bump_is_alone.sh'
+      run: 'git fetch --quiet origin main 2>/dev/null || true; tool/check_version_bump_is_alone_test.sh >/dev/null && tool/check_version_bump_is_alone.sh'
       fail_text: "❌ This branch changes the version AND other files. Land the other work first, then open a separate chore(release) PR."
 
     spell-check:
