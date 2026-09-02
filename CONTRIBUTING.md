@@ -88,6 +88,35 @@ commits, so the order matters. **Bump first, generate second** — the
 generator writes a section for whatever version it finds, so running it
 early files new work under the release already published.
 
+### 0. The bump is a PR of its own
+
+A release PR carries the bump and nothing else. Feature work lands first, on
+its own; the bump follows in a separate `chore(release): bump to X.Y.Z` PR.
+
+This is not bookkeeping preference. The repository squash-merges, so a bump
+committed on a feature branch is destroyed with the rest of that branch's
+history the moment the PR merges. What survives on `main` is a single `feat:`
+commit, and the release leaves no trace in the log at all. That is how 0.3.0
+shipped with no `chore(release)` commit, while 0.2.0 has `86c8789`.
+
+This is enforced by `tool/check_version_bump_is_alone.sh`, which the
+`version_bump_is_alone` CI job runs. A PR that changes the version in
+`pubspec.yaml` or `package.json` fails unless every file it touches is one of
+
+```
+pubspec.yaml  package.json  package-lock.json  README.md  CHANGELOG.md
+```
+
+The pre-push hook runs it too, so a piggy-backed bump is refused before the
+branch reaches the remote and no CI run is spent saying so. To check by hand:
+
+```sh
+tool/check_version_bump_is_alone.sh
+```
+
+If it fails, the fix is never to widen the allowlist. Drop the bump from the
+branch, land the feature, then open the release PR.
+
 ### 1. Bump the version in all three places, to the same value
 
 | File | Read by |
