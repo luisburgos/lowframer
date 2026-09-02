@@ -33,6 +33,7 @@ package-lock.json
 node_modules/
 
 # Developer and CI tooling, not consumer-facing.
+tool/
 lefthook.yml
 .changelogrc.js
 coverage/
