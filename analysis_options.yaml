@@ -6,3 +6,4 @@ analyzer:
     # as their own packages by CI's sub_packages job.
     - "example/**"
     - "showcase/**"
+    - build/**
