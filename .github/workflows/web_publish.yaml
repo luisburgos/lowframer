@@ -64,10 +64,17 @@ jobs:
       # Icon tree shaking is disabled because the gallery renders Material
       # icons chosen at runtime, which the shaker cannot see and would
       # otherwise strip.
+      #
+      # Wasm emits both a dart2wasm/skwasm build and the dart2js/canvaskit one;
+      # the loader picks wasm where the browser supports WasmGC and falls back
+      # to JS elsewhere. Measured locally it cut the cold first frame by
+      # 16-32% and the transfer by 18%. Pages cannot send COOP/COEP headers,
+      # so skwasm runs single-threaded, which the measurement already reflects.
       - name: Build web
         run: |
           flutter build web \
             --release \
+            --wasm \
             --base-href /lowframer/ \
             --no-tree-shake-icons
 
